@@ -5,6 +5,7 @@ local S=require(script.Parent.RoadSurface)
 local Course={Pickup=Layout.Pickup,Deposit=Layout.Deposit,BikeStart=Layout.BikeStart}
 local asphalt=Color3.fromRGB(62,68,75);local shoulder=Color3.fromRGB(76,80,83)
 local gold=Color3.fromRGB(242,194,53);local white=Color3.fromRGB(225,227,223);local cyan=Color3.fromRGB(39,197,229)
+type Sample={p:Vector3,t:Vector3}
 function Course.build():Model
  local old=workspace:FindFirstChild("CargoTestCourse")
  if old and old:IsA("Model") then if old:GetAttribute("LayoutVersion")==Layout.Version then require(script.Parent.BoundarySystem).apply(old);require(script.Parent.G1Visual).apply(old);return old end;old:Destroy() end
@@ -17,8 +18,8 @@ function Course.build():Model
  local function mark(name:string,size:Vector3,cf:CFrame,color:Color3)
   local p=S.part(model,name,size,cf,color,Enum.Material.SmoothPlastic);p.CanCollide=false;p.CanTouch=false;p.CastShadow=false
  end
- local function sign(p:Vector3,text:string)
-  local b=S.part(model,"BlockoutSign",Vector3.new(38,7,.4),CFrame.new(p),Color3.fromRGB(8,21,47),Enum.Material.Metal)
+ local function sign(p:Vector3,text:string,yaw:number?)
+  local b=S.part(model,"BlockoutSign",Vector3.new(38,7,.4),CFrame.new(p)*CFrame.Angles(0,yaw or 0,0),Color3.fromRGB(8,21,47),Enum.Material.Metal)
   for _,face in {Enum.NormalId.Front,Enum.NormalId.Back} do
    local g=Instance.new("SurfaceGui");g.Face=face;g.SizingMode=Enum.SurfaceGuiSizingMode.PixelsPerStud;g.PixelsPerStud=20;g.Parent=b
    local l=Instance.new("TextLabel");l.Size=UDim2.fromScale(1,1);l.BackgroundTransparency=1;l.Text=text;l.TextColor3=gold;l.TextScaled=true;l.Font=Enum.Font.GothamBold;l.Parent=g
@@ -27,8 +28,10 @@ function Course.build():Model
  local function strip(a:Vector3,b:Vector3,ra:Vector3,rb:Vector3,l:number,r:number,color:Color3,name:string)
   S.quad(model,a+ra*l,a+ra*r,b+rb*l,b+rb*r,color,name)
  end
- -- Straight city highway is partitioned with lots and accesses, not layered over them.
- rect("CityHighway",Vector3.new(-625,0,0),750,44,asphalt)
+ local city=Layout.City
+ local throatLen=city.ThroatX2-city.ThroatX1;local throatMid=(city.ThroatX1+city.ThroatX2)/2
+ -- v11: only the short straight throat remains between the Y-fork gateway and MainHighway (X=-250).
+ rect("CityHighway",Vector3.new(throatMid,0,0),throatLen,44,asphalt)
  local step=20
  for x=-250,3049,step do
   local a=Layout.RoutePoint(x);local b=Layout.RoutePoint(math.min(x+step,3050))
@@ -44,17 +47,16 @@ function Course.build():Model
   if x>=990 and x<=1100 then for _,side in {-1,1} do S.part(model,"BridgeRail",Vector3.new(.5,2,(b-a).Magnitude),cf*CFrame.new(side*22.3,1.15,0),cyan,Enum.Material.Metal) end end
   if x%200==150 then task.wait() end
  end
+ -- Same dash phase as v10 (-990+20k), limited to the throat.
  for x=-990,-250,20 do
-  mark("CenterDash",Vector3.new(7,.025,.25),CFrame.new(x,.045,0),gold)
+  if x-3.5>=city.ThroatX1 then mark("CenterDash",Vector3.new(7,.025,.25),CFrame.new(x,.045,0),gold) end
  end
  for _,side in {-1,1} do
-  rect("CityShoulder",Vector3.new(-625,0,side*19),750,6,shoulder,2)
-  mark("CityEdgeLine",Vector3.new(750,.025,.22),CFrame.new(-625,.045,side*16),white)
+  rect("CityShoulder",Vector3.new(throatMid,0,side*19),throatLen,6,shoulder,2)
+  mark("CityEdgeLine",Vector3.new(throatLen,.025,.22),CFrame.new(throatMid,.045,side*16),white)
  end
  local ep=Layout.RoutePoint(3050)
  rect("EndTurnaround",ep+Vector3.new(140,0,65),280,260,asphalt)
- -- Return uses the opposite lane through the same entry, not a raised diagonal crossover.
- rect("CityTurnaround",Vector3.new(-1000,0,0),90,100,asphalt)
  for _,zone in Layout.Zones do
   local pos=zone.position
   rect("ZonePad",pos+Vector3.new(0,0,-70),100,72,shoulder,2)
@@ -70,14 +72,13 @@ function Course.build():Model
   sign(pos+Vector3.new(0,12,-116),string.format("%02d %s",zone.id,zone.name))
  end
  for _,plot in Layout.Plots do
-  local c=plot.position;local back=if c.Z>0 then 1 else -1
-  -- Front access ends at lot edge and at the highway shoulder; flat partition removes overlap.
-  rect("GarageAccess",Vector3.new(c.X,0,back*40),32,80,asphalt)
-  rect("GarageLot",c,100,85,Color3.fromRGB(110,115,123),3)
-  rect("GarageJunction",Vector3.new(c.X,0,0),64,64,asphalt)
+  local c=plot.position;local frame=Layout.PlotFrame(plot)
+  -- Lot plus full-width apron to the ring outer edge (pull-through frontage, no reverse needed).
+  rect("GarageLot",c,Layout.LotSize.X,Layout.LotSize.Z,Color3.fromRGB(110,115,123),3)
+  rect("GarageApron",frame:PointToWorldSpace(Vector3.new(0,0,-(Layout.LotSize.Z+city.ApronDepth)/2)),Layout.LotSize.X,city.ApronDepth,asphalt)
   local tag=Instance.new("Model");tag.Name=plot.id;tag:SetAttribute("PlotId",plot.id);tag.Parent=model
   -- Garage shell is built in plot-local space (local -Z = front towards hub, +Z = back wall).
-  local frame=Layout.PlotFrame(plot);local b=Layout.PlotLocal.Building
+  local b=Layout.PlotLocal.Building
   local function at(offset:Vector3):CFrame return frame*CFrame.new(offset) end
   for _,side in {-1,1} do S.part(tag,"GarageShell",Vector3.new(2,20,32),at(b+Vector3.new(side*35,10,0)),Color3.fromRGB(61,72,91),Enum.Material.Concrete) end
   S.part(tag,"GarageBack",Vector3.new(72,20,2),at(b+Vector3.new(0,10,16)),asphalt,Enum.Material.Concrete)
@@ -85,22 +86,88 @@ function Course.build():Model
   sign(at(b+Vector3.new(0,25,-18)).Position,plot.id.." • อู่ต้นแบบ")
   mark("ParkingMark",Vector3.new(8,.025,12),at(Vector3.new(0,.045,-19)),cyan)
  end
- for _,z in {-220,220} do rect("CityServiceRoad",Vector3.new(-700,0,z),680,32,asphalt) end
- for _,x in {-1040,-360} do rect("CityCrossRoad",Vector3.new(x,0,0),32,440,asphalt) end
- -- Rear access enters behind the lot without crossing any other plot.
- for _,plot in Layout.Plots do
-  local back=if plot.position.Z>0 then 1 else -1
-  rect("GarageSideAccess",Vector3.new(plot.position.X+51,0,back*155),16,130,asphalt)
-  rect("GarageSideApron",plot.position+Vector3.new(43,0,0),32,32,asphalt)
+ -- ===== v11 service ring (two-way, 32 wide): straight sides/bottom are flat rects ending exactly
+ -- at arc tangent points; curves are WedgePart ribbons (same quad technique as MainHighway).
+ local W=city.RoadWidth;local half=W/2;local R=city.CornerRadius;local FS=city.ForkStartX
+ local cornerX=city.BottomX+R
+ local function dashes(name:string,a:Vector3,b:Vector3)
+  local len=(b-a).Magnitude;local n=math.floor(len/20)
+  for i=0,n-1 do local p=a:Lerp(b,(i+.5)/n);mark(name,Vector3.new(.25,.025,7),CFrame.lookAt(p,b)*CFrame.new(0,.045,0),gold) end
  end
+ for _,side in {-1,1} do
+  rect("RingSide",Vector3.new((cornerX+FS)/2,0,side*city.SideZ),FS-cornerX,W,asphalt)
+  dashes("RingDash",Vector3.new(cornerX,0,side*city.SideZ),Vector3.new(FS,0,side*city.SideZ))
+ end
+ rect("RingBottom",Vector3.new(city.BottomX,0,0),W,2*(city.SideZ-R),asphalt)
+ dashes("RingDash",Vector3.new(city.BottomX,0,-(city.SideZ-R)),Vector3.new(city.BottomX,0,city.SideZ-R))
+ -- Ribbon from sampled centreline points with exact unit tangents; right vector = (-t.Z,0,t.X).
+ local function ribbon(samples:{Sample},name:string)
+  for i=1,#samples-1 do
+   local s1,s2=samples[i],samples[i+1]
+   local r1=Vector3.new(-s1.t.Z,0,s1.t.X);local r2=Vector3.new(-s2.t.Z,0,s2.t.X)
+   strip(s1.p,s2.p,r1,r2,-half,half,asphalt,name)
+   if i%2==1 then local m=(s1.p+s2.p)/2;mark("RingDash",Vector3.new(.25,.025,math.min(7,(s2.p-s1.p).Magnitude*.8)),CFrame.lookAt(m,s2.p)*CFrame.new(0,.045,0),gold) end
+  end
+ end
+ local function arc(centre:Vector3,radius:number,a0:number,a1:number,segments:number,out:{Sample}?):{Sample}
+  local list=out or {};local dir=if a1>a0 then 1 else -1
+  for i=0,segments do
+   local a=a0+(a1-a0)*i/segments
+   local s={p=centre+Vector3.new(math.cos(a),0,math.sin(a))*radius,t=Vector3.new(-math.sin(a),0,math.cos(a))*dir}
+   if not (out and i==0 and #list>0) then table.insert(list,s) end
+  end
+  return list
+ end
+ -- Bottom corners: quarter arcs from the bottom side (angle pi) to each ring side.
+ ribbon(arc(Vector3.new(cornerX,0,-(city.SideZ-R)),R,math.pi,1.5*math.pi,12),"RingCorner")
+ ribbon(arc(Vector3.new(cornerX,0,city.SideZ-R),R,math.pi,.5*math.pi,12),"RingCorner")
+ -- Y-fork branches: arc (turn in) -> 50 degree diagonal -> arc (turn back to +X) into the gateway plaza.
+ local FR,TH=city.ForkRadius,city.ForkTheta
+ for _,side in {-1,1} do
+  local samples:{Sample}={}
+  -- Built for the left branch (Z<0) then mirrored by side; mirroring Z keeps tangents consistent.
+  local c1=Vector3.new(FS,0,-city.SideZ+FR)
+  arc(c1,FR,-math.pi/2,-math.pi/2+TH,10,samples)
+  local p1=samples[#samples].p;local dirv=Vector3.new(math.cos(TH),0,math.sin(TH))
+  local diagLen=((city.SideZ-city.BranchEndZ)-2*FR*(1-math.cos(TH)))/math.sin(TH)
+  for i=1,4 do table.insert(samples,{p=p1+dirv*diagLen*i/4,t=dirv}) end
+  local p2=samples[#samples].p
+  local c2=p2+Vector3.new(math.sin(TH),0,-math.cos(TH))*FR
+  arc(c2,FR,math.pi/2+TH,math.pi/2,10,samples)
+  if side==1 then for i,s in samples do samples[i]={p=Vector3.new(s.p.X,0,-s.p.Z),t=Vector3.new(s.t.X,0,-s.t.Z)} end end
+  ribbon(samples,"ForkBranch")
+ end
+ rect("GatewayPlaza",Vector3.new((city.GatewayX1+city.GatewayX2)/2,0,0),city.GatewayX2-city.GatewayX1,2*city.GatewayHalfZ,asphalt)
+ -- Central hub floor (walkable, no road through it). Corner boxes are excluded so flat rects never
+ -- overlap the curved ribbons; the small verge inside each corner stays grass.
+ local hubColour=Color3.fromRGB(150,146,136)
+ rect("HubFloor",Vector3.new((cornerX+FS)/2,0,0),FS-cornerX,2*city.HubHalfZ,hubColour)
+ local innerX=city.BottomX+half
+ rect("HubFloor",Vector3.new((innerX+cornerX)/2,0,0),cornerX-innerX,2*(city.SideZ-R),hubColour)
  for _,f in Layout.Facilities do
-  local z=if f.position.Z>0 then 220 else -220
-  rect("FacilityAccess",Vector3.new(f.position.X,0,(z+f.position.Z)/2),32,math.abs(z-f.position.Z),asphalt)
-  rect("FacilityReservation",f.position,100,90,Color3.fromRGB(105,104,118),2)
-  sign(f.position+Vector3.new(0,12,if f.position.Z>0 then 48 else -48),f.name)
+  rect("FacilityReservation",f.position,f.size.X,f.size.Z,Color3.fromRGB(105,104,118),2)
+  sign(f.position+Vector3.new(0,14,0),f.name)
  end
- rect("SpeedTestLane",Vector3.new(-760,0,-430),600,44,asphalt)
- rect("TrackAccess",Vector3.new(-900,0,-365),32,130,asphalt)
+ rect("LandmarkReservation",city.Landmark,city.LandmarkSize,city.LandmarkSize,Color3.fromRGB(196,160,60),2)
+ sign(city.Landmark+Vector3.new(0,14,0),"◆ STEAL A PART! Landmark • Placeholder")
+ rect("CentralPlaza",city.CentralPlaza,city.CentralPlazaSize.X,city.CentralPlazaSize.Z,Color3.fromRGB(176,170,158),2)
+ -- Pedestrian crossings opposite each garage door (paint only, non-collidable).
+ for _,plot in Layout.Plots do
+  local zc=(if plot.position.Z>0 then 1 else -1)*city.SideZ
+  for k=-4,4 do mark("Crosswalk",Vector3.new(6,.025,1.6),CFrame.new(plot.position.X,.045,zc+k*3.4),white) end
+ end
+ -- Direction signs facing drivers heading +X towards the gateway.
+ -- Signs stay on the hub floor (|Z|<=128), never overhanging a driving lane.
+ for _,side in {-1,1} do sign(Vector3.new(FS-12,12,side*(city.HubHalfZ-25)),"↑ HIGHWAY • ZONE 01–12",math.pi/2) end
+ -- City entry road and candidate SpeedTestLane (position not locked until B3 drive test).
+ rect("CityEntry",Vector3.new((city.EntryX1+city.EntryX2)/2,0,0),city.EntryX2-city.EntryX1,2*city.EntryHalfZ,asphalt)
+ sign(Vector3.new((city.EntryX1+city.EntryX2)/2,12,city.EntryHalfZ+24),"CITY ENTRY • GARAGE CITY",math.pi/2)
+ rect("SpeedTestLane",city.SpeedLaneCentre,city.SpeedLaneWidth,city.SpeedLaneLength,asphalt)
+ for _,side in {-1,1} do
+  rect("SpeedLaneTurnPad",Vector3.new((city.LanePadX1+city.LanePadX2)/2,0,side*(city.LanePadZ1+city.LanePadZ2)/2),city.LanePadX2-city.LanePadX1,city.LanePadZ2-city.LanePadZ1,asphalt)
+ end
+ dashes("RingDash",city.SpeedLaneCentre-Vector3.new(0,0,city.SpeedLaneLength/2),city.SpeedLaneCentre+Vector3.new(0,0,city.SpeedLaneLength/2))
+ sign(city.SpeedLaneCentre+Vector3.new(-city.SpeedLaneWidth/2-18,12,0),"SPEED TEST LANE • Candidate",math.pi/2)
  S.flat(model,rects)
  for _,x in {1014,1050,1086} do
   local p=Layout.RoutePoint(x)

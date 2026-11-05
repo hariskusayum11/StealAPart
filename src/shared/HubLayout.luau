@@ -1,6 +1,7 @@
 --!strict
 local Layout = {
- Version=10,
+ -- v11 rev2 (owner approved 2026-11-05): Central Hub + Y-fork gateway. Highway X>=-250 unchanged.
+ Version=11,
  TerrainVersion=9,
  Pickup=Vector3.new(-250,0,-40),
  -- Deposit/BikeStart/Spawn are derived from the G1 PlotFrame below (single source of truth).
@@ -18,12 +19,35 @@ local Layout = {
   DayZoneMax=Vector3.new(70,0,240),
  },
  Plots={
-  {id="G1",position=Vector3.new(-760,0,90),label="อู่ 1 / Blockout"},
-  {id="G2",position=Vector3.new(-640,0,90),label="อู่ 2 / Blockout"},
-  {id="G3",position=Vector3.new(-520,0,90),label="อู่ 3 / Blockout"},
-  {id="G4",position=Vector3.new(-760,0,-90),label="อู่ 4 / Blockout"},
-  {id="G5",position=Vector3.new(-640,0,-90),label="อู่ 5 / Blockout"},
-  {id="G6",position=Vector3.new(-520,0,-90),label="อู่ 6 / Blockout"},
+  -- Left (Z-) G1 bottom -> G3 top; right (Z+) G4 top -> G6 bottom. Doors face the hub.
+  {id="G1",position=Vector3.new(-865,0,-225),label="อู่ 1 / Blockout"},
+  {id="G2",position=Vector3.new(-745,0,-225),label="อู่ 2 / Blockout"},
+  {id="G3",position=Vector3.new(-625,0,-225),label="อู่ 3 / Blockout"},
+  {id="G4",position=Vector3.new(-625,0,225),label="อู่ 4 / Blockout"},
+  {id="G5",position=Vector3.new(-745,0,225),label="อู่ 5 / Blockout"},
+  {id="G6",position=Vector3.new(-865,0,225),label="อู่ 6 / Blockout"},
+ },
+ LotSize=Vector3.new(100,0,85),
+ -- Garage City road network (all at Y=0 on flat Terrain9 ground, X<-320).
+ City={
+  RoadWidth=32,
+  SideZ=150,            -- ring side centreline |Z|
+  BottomX=-987,         -- ring bottom centreline X
+  CornerRadius=56,      -- bottom corner centreline radius (inner lane 48 = 1.69x measured 28.4)
+  ApronDepth=16.5,      -- lot front edge to ring outer edge
+  HubHalfZ=134,         -- ring inner edge
+  ForkRadius=60,        -- Y-fork arc centreline radius (inner lane 52 = 1.83x)
+  ForkTheta=math.rad(50),
+  BranchEndZ=24,        -- branch centreline |Z| entering the gateway plaza
+  ForkStartX=0,         -- derived below (about -557.7)
+  GatewayX1=-396,GatewayX2=-364,GatewayHalfZ=56,
+  ThroatX1=-364,ThroatX2=-250, -- existing straight two-way approach; joins MainHighway at X=-250
+  EntryX1=-1038,EntryX2=-1003,EntryHalfZ=16,
+  SpeedLaneCentre=Vector3.new(-1060,0,0),SpeedLaneWidth=44,SpeedLaneLength=600, -- candidate, B3 drive test pending
+  LanePadX1=-1090,LanePadX2=-990,LanePadZ1=300,LanePadZ2=380,
+  Landmark=Vector3.new(-760,0,0),LandmarkSize=30,
+  CentralPlaza=Vector3.new(-940,0,0),CentralPlazaSize=Vector3.new(30,0,110),
+  ExpansionHalfX=55,ExpansionZ1=267.5,ExpansionZ2=400, -- reserved only, not built
  },
  Zones={
   {id=1,name="ซอยช่างบ้านเรา",position=Vector3.new(-250,0,0)},
@@ -40,13 +64,22 @@ local Layout = {
   {id=12,name="คลังอะไหล่ตำนาน",position=Vector3.new(3050,0,-100)},
  },
  Facilities={
-  {name="Race Hub / สนามทดสอบ",position=Vector3.new(-900,0,-300)},
-  {name="Parts Market",position=Vector3.new(-900,0,300)},
-  {name="Shop",position=Vector3.new(-420,0,300)},
-  {name="Upgrade Center",position=Vector3.new(-600,0,300)},
-  {name="Event Plaza",position=Vector3.new(-420,0,-300)},
+  -- Placeholders only: no backend exists for any facility.
+  {name="Race Hub • Placeholder",position=Vector3.new(-520,0,0),size=Vector3.new(80,0,90)},
+  {name="Parts Market • Placeholder",position=Vector3.new(-640,0,-85),size=Vector3.new(80,0,60)},
+  {name="Shop • Placeholder",position=Vector3.new(-640,0,85),size=Vector3.new(80,0,60)},
+  {name="Upgrade Center • Placeholder",position=Vector3.new(-870,0,-85),size=Vector3.new(80,0,60)},
+  {name="Event Plaza • Placeholder",position=Vector3.new(-870,0,85),size=Vector3.new(80,0,60)},
  },
 }
+-- Y-fork start X derived from the gateway and arc parameters (two arcs + 50 degree diagonal).
+do
+ local c=Layout.City
+ local lateral=c.SideZ-c.BranchEndZ
+ local arcLat=2*c.ForkRadius*(1-math.cos(c.ForkTheta))
+ local diagLat=lateral-arcLat
+ c.ForkStartX=c.GatewayX1-(2*c.ForkRadius*math.sin(c.ForkTheta)+diagLat/math.tan(c.ForkTheta))
+end
 -- Continuous analytic alignment: X always increases; zones never wrap back.
 function Layout.RoutePoint(x: number): Vector3
  local t=math.max(0,x+250)
