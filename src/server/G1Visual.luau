@@ -1,6 +1,8 @@
 --!strict
 -- Owner-approved G1-only architecture study. Original collision shell and road remain authoritative.
-local Visual={Version=4}
+-- v5: identical geometry to v4, now expressed in G1 plot-local space via Layout.PlotFrame.
+local Layout=require(game.ReplicatedStorage.RaceAndRaid.HubLayout)
+local Visual={Version=5}
 local cream=Color3.fromRGB(232,224,201)
 local navy=Color3.fromRGB(27,46,64)
 local teal=Color3.fromRGB(26,124,131)
@@ -13,9 +15,10 @@ function Visual.apply(course:Model)
  local original=course:FindFirstChild("G1")
  if not original then return end
  local root=Instance.new("Model");root.Name="G1Visual";root:SetAttribute("VisualVersion",Visual.Version)
- local origin=Vector3.new(-760,0,113)
+ local frame=Layout.PlotFrame(Layout.FindPlot("G1"))
+ local origin=frame*CFrame.new(Layout.PlotLocal.Building)
  local function part(name:string,size:Vector3,pos:Vector3,color:Color3,material:Enum.Material?,rotation:CFrame?):Part
-  local p=Instance.new("Part");p.Name=name;p.Size=size;p.CFrame=CFrame.new(origin+pos)*(rotation or CFrame.identity).Rotation;p.Color=color;p.Material=material or Enum.Material.Metal
+  local p=Instance.new("Part");p.Name=name;p.Size=size;p.CFrame=origin*CFrame.new(pos)*(rotation or CFrame.identity).Rotation;p.Color=color;p.Material=material or Enum.Material.Metal
   p.Anchored=true;p.CanCollide=false;p.CanTouch=false;p.CanQuery=false;p.TopSurface=Enum.SurfaceType.Smooth;p.BottomSurface=Enum.SurfaceType.Smooth;p.Parent=root;return p
  end
  local function beam(name:string,a:Vector3,b:Vector3,width:number,color:Color3)
@@ -36,9 +39,11 @@ function Visual.apply(course:Model)
  end
  -- Remove only G1's old prototype sign and cyan visual tile, never fixtures or attachments.
  for _,p in course:GetChildren() do
-  if p:IsA("BasePart") and math.abs(p.Position.X+760)<1 then
-   if p.Name=="BlockoutSign" and math.abs(p.Position.Z-95)<1 then p.Transparency=1;for _,g in p:GetChildren() do if g:IsA("SurfaceGui") then g.Enabled=false end end end
-   if p.Name=="ParkingMark" and math.abs(p.Position.Z-71)<1 then p.Transparency=1 end
+  local l=if p:IsA("BasePart") then frame:PointToObjectSpace(p.Position) else nil
+  if l and math.abs(l.X)<1 then
+   -- Plot-local: sign at Building+(0,25,-18) => z 5; ParkingMark at z -19.
+   if p.Name=="BlockoutSign" and math.abs(l.Z-5)<1 then p.Transparency=1;for _,g in p:GetChildren() do if g:IsA("SurfaceGui") then g.Enabled=false end end end
+   if p.Name=="ParkingMark" and math.abs(l.Z+19)<1 then p.Transparency=1 end
   end
  end
  -- Double pitched metal roof with exposed trusses and folded fascia.
@@ -109,7 +114,7 @@ function Visual.apply(course:Model)
   for i=1,6 do
    local a=i*math.pi/3
    local leaf=Instance.new("WedgePart");leaf.Name="TropicalLanceLeaf";leaf.Size=Vector3.new(.14,1.8,5)
-   leaf.CFrame=CFrame.new(origin+Vector3.new(x+math.sin(a)*1.2,3.5,z+math.cos(a)*1.2))*CFrame.Angles(-.5,a,.25)
+   leaf.CFrame=origin*CFrame.new(x+math.sin(a)*1.2,3.5,z+math.cos(a)*1.2)*CFrame.Angles(-.5,a,.25)
    leaf.Color=if i%2==0 then Color3.fromRGB(62,131,71) else Color3.fromRGB(104,161,71);leaf.Material=Enum.Material.Grass
    leaf.Anchored=true;leaf.CanCollide=false;leaf.CanTouch=false;leaf.CanQuery=false;leaf.CastShadow=false;leaf.Parent=root
   end

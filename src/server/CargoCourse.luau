@@ -76,12 +76,14 @@ function Course.build():Model
   rect("GarageLot",c,100,85,Color3.fromRGB(110,115,123),3)
   rect("GarageJunction",Vector3.new(c.X,0,0),64,64,asphalt)
   local tag=Instance.new("Model");tag.Name=plot.id;tag:SetAttribute("PlotId",plot.id);tag.Parent=model
-  local b=c+Vector3.new(0,0,back*23)
-  for _,side in {-1,1} do S.part(tag,"GarageShell",Vector3.new(2,20,32),CFrame.new(b+Vector3.new(side*35,10,0)),Color3.fromRGB(61,72,91),Enum.Material.Concrete) end
-  S.part(tag,"GarageBack",Vector3.new(72,20,2),CFrame.new(b+Vector3.new(0,10,back*16)),asphalt,Enum.Material.Concrete)
-  S.part(tag,"GarageRoof",Vector3.new(76,2,36),CFrame.new(b+Vector3.new(0,21,0)),Color3.fromRGB(36,44,62),Enum.Material.Metal)
-  sign(b+Vector3.new(0,25,-back*18),plot.id.." • อู่ต้นแบบ")
-  mark("ParkingMark",Vector3.new(8,.025,12),CFrame.new(c+Vector3.new(0,.045,-back*19)),cyan)
+  -- Garage shell is built in plot-local space (local -Z = front towards hub, +Z = back wall).
+  local frame=Layout.PlotFrame(plot);local b=Layout.PlotLocal.Building
+  local function at(offset:Vector3):CFrame return frame*CFrame.new(offset) end
+  for _,side in {-1,1} do S.part(tag,"GarageShell",Vector3.new(2,20,32),at(b+Vector3.new(side*35,10,0)),Color3.fromRGB(61,72,91),Enum.Material.Concrete) end
+  S.part(tag,"GarageBack",Vector3.new(72,20,2),at(b+Vector3.new(0,10,16)),asphalt,Enum.Material.Concrete)
+  S.part(tag,"GarageRoof",Vector3.new(76,2,36),at(b+Vector3.new(0,21,0)),Color3.fromRGB(36,44,62),Enum.Material.Metal)
+  sign(at(b+Vector3.new(0,25,-18)).Position,plot.id.." • อู่ต้นแบบ")
+  mark("ParkingMark",Vector3.new(8,.025,12),at(Vector3.new(0,.045,-19)),cyan)
  end
  for _,z in {-220,220} do rect("CityServiceRoad",Vector3.new(-700,0,z),680,32,asphalt) end
  for _,x in {-1040,-360} do rect("CityCrossRoad",Vector3.new(x,0,0),32,440,asphalt) end

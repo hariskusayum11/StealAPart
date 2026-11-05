@@ -3,6 +3,9 @@
 local Players = game:GetService("Players")
 local HttpService = game:GetService("HttpService")
 local Course=require(script.Parent.CargoCourse)
+-- Spawn follows the G1 PlotFrame (HubLayout is the single coordinate source).
+local spawnPoint=workspace:FindFirstChild("Spawn")
+if spawnPoint and spawnPoint:IsA("SpawnLocation") then spawnPoint.CFrame=require(game.ReplicatedStorage.RaceAndRaid.HubLayout).SpawnCFrame end
 Course.build()
 local bike = workspace:WaitForChild("ChassisTestBike") :: Model
 local appearance = require(script.Parent.VehicleAppearance)

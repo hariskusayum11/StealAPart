@@ -3,9 +3,20 @@ local Layout = {
  Version=10,
  TerrainVersion=9,
  Pickup=Vector3.new(-250,0,-40),
- Deposit=Vector3.new(-760,0,90),
- BikeStart=CFrame.new(-760,2.85,80),
+ -- Deposit/BikeStart/Spawn are derived from the G1 PlotFrame below (single source of truth).
+ Deposit=Vector3.zero,
+ BikeStart=CFrame.identity,
+ SpawnCFrame=CFrame.identity,
+ DepositPlot="G1",
  MinX=-1250,MaxX=3800,MaxZ=1100,
+ -- Plot-local offsets. Local -Z is the garage front (towards the hub), +Z is the back wall.
+ PlotLocal={
+  Building=Vector3.new(0,0,23),
+  BikeStart=Vector3.new(0,2.85,-10),
+  Spawn=Vector3.new(8,3,10),
+  DayZoneMin=Vector3.new(-110,0,-70),
+  DayZoneMax=Vector3.new(70,0,240),
+ },
  Plots={
   {id="G1",position=Vector3.new(-760,0,90),label="อู่ 1 / Blockout"},
   {id="G2",position=Vector3.new(-640,0,90),label="อู่ 2 / Blockout"},
@@ -43,6 +54,22 @@ function Layout.RoutePoint(x: number): Vector3
  local h=math.max(0,x-200)
  local y=16*(1-math.cos(h/380))
  return Vector3.new(x,y,z)
+end
+-- Garage frame: origin at lot centre, LookVector (local -Z) faces the hub centreline Z=0.
+function Layout.PlotFrame(plot: {position: Vector3}): CFrame
+ local c=plot.position
+ if c.Z>0 then return CFrame.new(c) end
+ return CFrame.new(c)*CFrame.Angles(0,math.pi,0)
+end
+function Layout.FindPlot(id: string)
+ for _,plot in Layout.Plots do if plot.id==id then return plot end end
+ error("Unknown plot "..id)
+end
+do
+ local frame=Layout.PlotFrame(Layout.FindPlot(Layout.DepositPlot))
+ Layout.Deposit=frame.Position
+ Layout.BikeStart=frame*CFrame.new(Layout.PlotLocal.BikeStart)
+ Layout.SpawnCFrame=frame*CFrame.new(Layout.PlotLocal.Spawn)
 end
 for _,zone in Layout.Zones do zone.position=Layout.RoutePoint(zone.position.X) end
 Layout.Pickup=Layout.Zones[1].position+Vector3.new(0,0,-55)
