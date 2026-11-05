@@ -1,0 +1,6 @@
+from pathlib import Path
+p=Path('src/shared/HubLayout.luau');s=p.read_text(encoding='utf-8').replace('Version=3','Version=4');p.write_text(s,encoding='utf-8')
+p=Path('src/server/CargoCourse.luau');s=p.read_text(encoding='utf-8');s=s.replace('terrain:FillBlock(CFrame.new(x,-32,0),Vector3.new(512,64,1792),Enum.Material.Grass)','terrain:FillBlock(CFrame.new(x,100,0),Vector3.new(512,300,1792),Enum.Material.Air)\n   terrain:FillBlock(CFrame.new(x,-36,0),Vector3.new(512,64,1792),Enum.Material.Grass)')
+s=s.replace('Vector3.new(width,.3,delta.Magnitude+1)','Vector3.new(width,4.3,delta.Magnitude+1)').replace('mid+Vector3.new(0,.15,0),b+Vector3.new(0,.15,0)','mid+Vector3.new(0,-1.85,0),b+Vector3.new(0,-1.85,0)').replace('CFrame.new(0,.17,','CFrame.new(0,2.17,')
+s=s.replace('Vector3.new(100,.3,72)','Vector3.new(100,4.3,72)').replace('Vector3.new(100,.3,85)','Vector3.new(100,4.3,85)').replace('Vector3.new(100,.3,90)','Vector3.new(100,4.3,90)').replace('Vector3.new(0,.15,','Vector3.new(0,-1.85,')
+p.write_text(s,encoding='utf-8')

@@ -1,0 +1,231 @@
+{
+  "counts": {
+    "ServerStorage": 1,
+    "Model": 65,
+    "ModuleScript": 8,
+    "Script": 5,
+    "ScreenGui": 1,
+    "LocalScript": 11,
+    "BindableEvent": 1,
+    "ObjectValue": 1,
+    "BoolValue": 12,
+    "Frame": 61,
+    "ImageButton": 5,
+    "ImageLabel": 14,
+    "TextButton": 17,
+    "UISizeConstraint": 5,
+    "UICorner": 36,
+    "UIPadding": 9,
+    "UIStroke": 17,
+    "UIGradient": 30,
+    "Folder": 7,
+    "Vector3Value": 2,
+    "NumberValue": 30,
+    "CFrameValue": 1,
+    "StringValue": 1,
+    "RemoteEvent": 2,
+    "Sound": 13,
+    "EqualizerSoundEffect": 13,
+    "DistortionSoundEffect": 6,
+    "UnreliableRemoteEvent": 2,
+    "UIAspectRatioConstraint": 20,
+    "CanvasGroup": 2,
+    "TextLabel": 23,
+    "ScrollingFrame": 1,
+    "UIListLayout": 1,
+    "TextBox": 1,
+    "TremoloSoundEffect": 1,
+    "ParticleEmitter": 4,
+    "Part": 69,
+    "SpringConstraint": 2,
+    "Attachment": 12,
+    "HingeConstraint": 2,
+    "AlignOrientation": 1,
+    "WeldConstraint": 6,
+    "PrismaticConstraint": 1,
+    "SpecialMesh": 2,
+    "MeshPart": 14,
+    "VehicleSeat": 1,
+    "ConeHandleAdornment": 2
+  },
+  "scripts": [
+    {
+      "index": 0,
+      "name": "A-Chassis Tune",
+      "lines": 448,
+      "flags": []
+    },
+    {
+      "index": 1,
+      "name": "Initialize",
+      "lines": 793,
+      "flags": [
+        "local _BuildVersion = require(script.Parent.README)",
+        "local _Tune = require(script.Parent)",
+        "local Units = require(bike[\"A-Chassis Tune\"].README.Units)",
+        "require(v)"
+      ]
+    },
+    {
+      "index": 2,
+      "name": "MiscWeld",
+      "lines": 54,
+      "flags": []
+    },
+    {
+      "index": 3,
+      "name": "AnimSetup",
+      "lines": 302,
+      "flags": []
+    },
+    {
+      "index": 4,
+      "name": "README",
+      "lines": 777,
+      "flags": []
+    },
+    {
+      "index": 5,
+      "name": "CustomEngine",
+      "lines": 88,
+      "flags": []
+    },
+    {
+      "index": 6,
+      "name": "Units",
+      "lines": 23,
+      "flags": []
+    },
+    {
+      "index": 7,
+      "name": "Drive",
+      "lines": 1471,
+      "flags": [
+        "local _Tune = require(bike[\"A-Chassis Tune\"])",
+        "local Units = require(bike[\"A-Chassis Tune\"].README.Units)",
+        "local engine = bike[\"A-Chassis Tune\"].README:FindFirstChild(\"CustomEngine\") and require(bike[\"A-Chassis Tune\"].README:FindFirstChild(\"CustomEngine\")) or nil",
+        "print(\"A-Chassis, Version \" .. require(bike[\"A-Chassis Tune\"].README))"
+      ]
+    },
+    {
+      "index": 8,
+      "name": "Anims",
+      "lines": 557,
+      "flags": []
+    },
+    {
+      "index": 9,
+      "name": "FEAnims",
+      "lines": 481,
+      "flags": []
+    },
+    {
+      "index": 10,
+      "name": "Kickstand",
+      "lines": 10,
+      "flags": []
+    },
+    {
+      "index": 11,
+      "name": "Script",
+      "lines": 18,
+      "flags": []
+    },
+    {
+      "index": 12,
+      "name": "Aerodynamics",
+      "lines": 163,
+      "flags": [
+        "local Units = require(bike[\"A-Chassis Tune\"].README.Units)"
+      ]
+    },
+    {
+      "index": 13,
+      "name": "Sounds",
+      "lines": 319,
+      "flags": [
+        "local _Tune = require(bike[\"A-Chassis Tune\"])",
+        "local Units = require(bike[\"A-Chassis Tune\"].README.Units)"
+      ]
+    },
+    {
+      "index": 14,
+      "name": "README",
+      "lines": 35,
+      "flags": []
+    },
+    {
+      "index": 15,
+      "name": "Server",
+      "lines": 264,
+      "flags": [
+        "local _Tune = require(bike[\"A-Chassis Tune\"])",
+        "local Units = require(bike[\"A-Chassis Tune\"].README.Units)"
+      ]
+    },
+    {
+      "index": 16,
+      "name": "MSteerScript",
+      "lines": 77,
+      "flags": []
+    },
+    {
+      "index": 17,
+      "name": "Gauges",
+      "lines": 490,
+      "flags": [
+        "local Units = require(script.Parent.Parent.Bike.Value[\"A-Chassis Tune\"].README.Units)",
+        "local _Tune = require(bike:WaitForChild(\"A-Chassis Tune\"))"
+      ]
+    },
+    {
+      "index": 18,
+      "name": "Controls",
+      "lines": 231,
+      "flags": [
+        "local _Tune = require(bike[\"A-Chassis Tune\"])"
+      ]
+    },
+    {
+      "index": 19,
+      "name": "GForces",
+      "lines": 123,
+      "flags": [
+        "local Units = require(bike[\"A-Chassis Tune\"].README.Units)",
+        "local _Tune = require(bike[\"A-Chassis Tune\"])"
+      ]
+    },
+    {
+      "index": 20,
+      "name": "Tune",
+      "lines": 69,
+      "flags": []
+    },
+    {
+      "index": 21,
+      "name": "Simulated",
+      "lines": 545,
+      "flags": [
+        "local _WheelTune = require(script.Parent.Tune)",
+        "local _Tune = require(bike[\"A-Chassis Tune\"])",
+        "local Units = require(bike[\"A-Chassis Tune\"].README.Units)"
+      ]
+    },
+    {
+      "index": 22,
+      "name": "Server",
+      "lines": 349,
+      "flags": [
+        "local _Tune = require(bike[\"A-Chassis Tune\"])",
+        "local Units = require(bike[\"A-Chassis Tune\"].README.Units)",
+        "wheelTuneThing = require(desc)"
+      ]
+    },
+    {
+      "index": 23,
+      "name": "Ignition",
+      "lines": 43,
+      "flags": []
+    }
+  ]
+}

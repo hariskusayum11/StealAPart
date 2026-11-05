@@ -1,0 +1,22 @@
+[
+  {
+    "pack": "city-kit-industrial",
+    "downloaded": false,
+    "error": "HTTP Error 403: Forbidden"
+  },
+  {
+    "pack": "factory-kit",
+    "downloaded": false,
+    "error": "HTTP Error 403: Forbidden"
+  },
+  {
+    "pack": "city-kit-commercial",
+    "downloaded": false,
+    "error": "HTTP Error 403: Forbidden"
+  },
+  {
+    "pack": "racing-kit",
+    "downloaded": false,
+    "error": "HTTP Error 403: Forbidden"
+  }
+]

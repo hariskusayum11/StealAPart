@@ -1,0 +1,24 @@
+{
+  "source": "User-supplied PNGs on 2026-11-04; use authorized by owner. Original files preserved unchanged.",
+  "uploadedVia": "Official Studio MCP upload_image",
+  "assets": {
+    "loading": {
+      "file": "assets/ui/source/loading.png",
+      "id": "rbxassetid://77547713334002"
+    },
+    "welcome": {
+      "file": "assets/ui/source/welcome.png",
+      "id": "rbxassetid://135139130322921"
+    },
+    "garageArtwork": {
+      "file": "assets/ui/source/garage-art.png",
+      "id": "rbxassetid://107954772658752"
+    },
+    "uiKit": {
+      "file": "assets/ui/source/ui-kit.png",
+      "id": "rbxassetid://92686584842368",
+      "use": "ImageRect crops only for logo/icons, never full-screen UI"
+    }
+  },
+  "verification": "Loading and welcome AssetFetchStatus.Success observed in Studio. Welcome ImageLabel.IsLoaded true. Not published; cross-owner permissions/mobile not verified."
+}

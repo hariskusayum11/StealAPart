@@ -1,0 +1,5 @@
+from pathlib import Path
+import json,shutil,datetime
+p=Path('src/server/Lab.server.luau');s=p.read_text(encoding='utf-8');s=s.replace('appearance.apply(bike,template)','appearance.apply(bike,template)\nlocal driveSeat=bike:WaitForChild("DriveSeat") :: VehicleSeat\nbike:PivotTo(Course.BikeStart*driveSeat.CFrame:Inverse()*bike:GetPivot())');s=s.replace('math.abs(p.X)>180 or math.abs(p.Z)>560','math.abs(p.X)>350 or math.abs(p.Z)>350');p.write_text(s,encoding='utf-8')
+p=Path('default.project.json');c=json.loads(p.read_text());c['tree']['Workspace']['TestSurface']['$properties'].update(Transparency=1,CanCollide=False);c['tree']['Workspace']['Spawn']['$properties']['CFrame']=[-172,3,130,1,0,0,0,1,0,0,0,1];p.write_text(json.dumps(c,indent=2),encoding='utf-8')
+p=Path('PROJECT_MEMORY.md');p.write_text(p.read_text(encoding='utf-8')+'\n- Owner approved latest island/roundabout image as hub direction on 2026-11-04: central roundabout, six garage plots and north Parts Zone supersede old Stadium Oval hub coordinates. HubLayout is the new local slice layout; no claim that historical 1600-stud city is implemented.\n',encoding='utf-8')

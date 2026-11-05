@@ -1,0 +1,48 @@
+{
+  "name": "R04 Asset Review Only",
+  "servePort": 34884,
+  "tree": {
+    "$className": "DataModel",
+    "Workspace": {
+      "$className": "Workspace",
+      "ReviewFloor": {
+        "$className": "Part",
+        "$properties": {
+          "Anchored": true,
+          "Size": [
+            220,
+            2,
+            220
+          ],
+          "Position": [
+            0,
+            -1,
+            0
+          ],
+          "Color": [
+            0.22,
+            0.25,
+            0.29
+          ]
+        }
+      },
+      "SpawnLocation": {
+        "$className": "SpawnLocation",
+        "$properties": {
+          "Anchored": true,
+          "Position": [
+            0,
+            3,
+            40
+          ]
+        }
+      }
+    },
+    "Lighting": {
+      "$properties": {
+        "ClockTime": 14,
+        "Brightness": 2
+      }
+    }
+  }
+}

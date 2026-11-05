@@ -1,0 +1,5 @@
+from pathlib import Path
+import json
+p=Path('default.project.json');c=json.loads(p.read_text());c['tree']['Lighting']['HighwayAtmosphere']={'$className':'Atmosphere','$properties':{'Density':.26,'Offset':.15,'Haze':1.5,'Glare':.05,'Color':[.78,.85,.94],'Decay':[.4,.51,.65]}};p.write_text(json.dumps(c,indent=2),encoding='utf-8')
+r=[dict(label='r02-atmosphere',name='execute_luau',arguments=dict(studio_id='62c81645-c228-4b4d-a6ba-7cf2cbf8da1c',datamodel_type='Server',code='local a=game.Lighting:FindFirstChild("HighwayAtmosphere") or Instance.new("Atmosphere") a.Name="HighwayAtmosphere" a.Density=.26 a.Offset=.15 a.Haze=1.5 a.Glare=.05 a.Color=Color3.new(.78,.85,.94) a.Decay=Color3.new(.4,.51,.65) a.Parent=game.Lighting return "distance atmosphere set"'))]
+Path('docs/mcp-check/r02-atmosphere.json').write_text(json.dumps(r))

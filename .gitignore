@@ -1,0 +1,10 @@
+.tools/
+build/
+backups/
+assets/quarantine/
+docs/mcp-check/
+*.rbxl
+*.rbxlx
+*.lock
+*.log
+__pycache__/

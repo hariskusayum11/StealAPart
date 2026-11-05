@@ -1,0 +1,9 @@
+from pathlib import Path
+import json
+sid='62c81645-c228-4b4d-a6ba-7cf2cbf8da1c'
+r=[]
+def add(l,n,**a):r.append(dict(label=l,name=n,arguments=dict(studio_id=sid,**a)))
+add('highway-ground-audit','execute_luau',datamodel_type='Server',code='local layout=require(game.ReplicatedStorage.RaceAndRaid.HubLayout) local m=workspace.CargoTestCourse local plots=0 local zones=0 for _,v in m:GetChildren() do if v:GetAttribute("PlotId") then plots+=1 end if v:GetAttribute("ZoneId") then zones+=1 end end local failures={} local p=RaycastParams.new() p.FilterType=Enum.RaycastFilterType.Include p.FilterDescendantsInstances={workspace.Terrain} for _,z in layout.Zones do local h=workspace:Raycast(z.position+Vector3.new(0,40,0),Vector3.new(0,-100,0),p) if not h then table.insert(failures,z.id) end end return {plots=plots,zones=zones,terrainFailures=failures,bike=tostring(workspace.ChassisTestBike.DriveSeat.Position),pickup=tostring(workspace.TestScrapPickup.Position),deposit=tostring(workspace.TestGarageDeposit.Position)}')
+add('highway-hide-entry','execute_luau',datamodel_type='Client',code='local p=game.Players.LocalPlayer local g=p.PlayerGui:FindFirstChild("StealEntry") if g then g:Destroy() end p:SetAttribute("EntryOpen",false) return "photo only"')
+for label,pos,target in [('highway-world', [1100,1750,1800],[1100,0,0]),('highway-garages',[-640,220,330],[-640,0,0]),('highway-sequence',[1400,1700,1200],[1400,0,0]),('highway-facilities',[-650,550,660],[-650,0,0]),('highway-player',[-775,10,115],[-760,3,80])]:add(label,'screen_capture',capture_id=label,camera_position=pos,look_at_position=target)
+Path('docs/mcp-check/highway-check.json').write_text(json.dumps(r))

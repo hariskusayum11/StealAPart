@@ -1,0 +1,9 @@
+{
+  "layoutVersion": 10,
+  "boundaryVersion": 1,
+  "actualSegments": 16,
+  "maxHorizontalPartSize": 1011,
+  "staticBlockcasts": 16,
+  "passedBlockcasts": 16,
+  "scope": "Measured in Studio Edit; structural sweeps only, not live vehicle/player collision QA"
+}

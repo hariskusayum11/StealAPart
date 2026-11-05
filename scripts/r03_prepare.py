@@ -1,0 +1,5 @@
+from pathlib import Path
+import shutil,datetime
+b=Path('backups')/('pre-r03-ui-'+datetime.datetime.now().strftime('%Y%m%d-%H%M%S'));b.mkdir(parents=True);shutil.copytree('src',b/'src');shutil.copy2('default.project.json',b/'default.project.json')
+shutil.copy2(r'C:\Users\SC1220-000\.codex\attachments\1914d079-c8b2-43bf-9455-8eb152890489\Pasted text.txt','docs/DEVELOPMENT_ORDER_R03_SOURCE.md')
+p=Path('PROJECT_MEMORY.md');p.write_text(p.read_text(encoding='utf-8')+'\n- Latest order R03: docs/DEVELOPMENT_ORDER_R03_SOURCE.md. Start Audit + UI Foundation + Main HUD, send screenshots for owner approval BEFORE next UI stages. Preserve prior engineering systems. UI screenshots are references only; full-screen baked UI images must be replaced in the later Core Player Flow phase while preserving original artwork sources. R03 roundtrip and Street Hatch are not passed/available yet.\n',encoding='utf-8')

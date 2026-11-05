@@ -1,0 +1,145 @@
+{
+  "name": "StealAPartBenchmark",
+  "servePort": 34880,
+  "tree": {
+    "$className": "DataModel",
+    "ReplicatedStorage": {
+      "RaceAndRaid": {
+        "$path": "src/shared"
+      }
+    },
+    "ServerScriptService": {
+      "RaceAndRaid": {
+        "$path": "src/server"
+      }
+    },
+    "StarterPlayer": {
+      "StarterPlayerScripts": {
+        "RaceAndRaid": {
+          "$path": "src/client"
+        }
+      }
+    },
+    "Workspace": {
+      "$properties": {
+        "Gravity": 196.2,
+        "StreamingEnabled": true,
+        "StreamingMinRadius": 256,
+        "StreamingTargetRadius": 768
+      },
+      "Spawn": {
+        "$className": "SpawnLocation",
+        "$properties": {
+          "Anchored": true,
+          "Size": [
+            8,
+            1,
+            8
+          ],
+          "Neutral": true,
+          "Transparency": 1,
+          "CanCollide": false,
+          "Duration": 0,
+          "CFrame": [
+            -752,
+            3,
+            100,
+            1,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            1
+          ]
+        }
+      },
+      "TestSurface": {
+        "$className": "Part",
+        "$properties": {
+          "Anchored": true,
+          "Size": [
+            400,
+            1,
+            1200
+          ],
+          "Color": [
+            0.19,
+            0.23,
+            0.25
+          ],
+          "Material": "Concrete",
+          "CFrame": [
+            0,
+            -1,
+            0,
+            1,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            1
+          ],
+          "Transparency": 1,
+          "CanCollide": false
+        }
+      },
+      "ChassisTestBike": {
+        "$path": "assets/vendor/AChassisMotorcycle.rbxmx"
+      }
+    },
+    "ServerStorage": {
+      "$ignoreUnknownInstances": true,
+      "UnderboneBody": {
+        "$path": "assets/body-review/UnderboneBody.model.json"
+      }
+    },
+    "Lighting": {
+      "$properties": {
+        "ClockTime": 15,
+        "Brightness": 2,
+        "Ambient": [
+          0.35,
+          0.38,
+          0.46
+        ],
+        "OutdoorAmbient": [
+          0.48,
+          0.51,
+          0.58
+        ],
+        "ExposureCompensation": 0,
+        "GlobalShadows": true
+      },
+      "HighwayAtmosphere": {
+        "$className": "Atmosphere",
+        "$properties": {
+          "Density": 0.26,
+          "Offset": 0.15,
+          "Haze": 1.5,
+          "Glare": 0.05,
+          "Color": [
+            0.78,
+            0.85,
+            0.94
+          ],
+          "Decay": [
+            0.4,
+            0.51,
+            0.65
+          ]
+        }
+      }
+    },
+    "ReplicatedFirst": {
+      "StealEntry": {
+        "$path": "src/first"
+      }
+    }
+  }
+}

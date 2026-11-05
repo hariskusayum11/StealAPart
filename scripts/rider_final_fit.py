@@ -1,0 +1,5 @@
+import pathlib,json
+p=pathlib.Path('src/server/RiderPose.luau');s=p.read_text();s=s.replace('ik.Type=Enum.IKControlType.Position','ik.Type=if isArm then Enum.IKControlType.Position else Enum.IKControlType.Transform');p.write_text(s,encoding='utf-8')
+p=pathlib.Path('default.project.json');c=json.loads(p.read_text());c['tree']['Workspace']['Spawn']['$properties'].update(Transparency=1,CanCollide=False);p.write_text(json.dumps(c,indent=2),encoding='utf-8')
+r=[dict(label='rider-foot-orientation',name='execute_luau',arguments=dict(studio_id='62c81645-c228-4b4d-a6ba-7cf2cbf8da1c',datamodel_type='Server',code='local b=workspace.ChassisTestBike local p=game.Players:GetPlayers()[1] b.DriveSeat:Sit(p.Character:FindFirstChildOfClass("Humanoid")) task.wait(0.3) for _,v in p.Character.Humanoid:GetChildren() do if v:IsA("IKControl") and v.Name:find("Leg") then v.Type=Enum.IKControlType.Transform end end workspace.Spawn.Transparency=1 workspace.Spawn.CanCollide=false return "feet orientation and hidden test spawn"'))]
+pathlib.Path('docs/mcp-check/rider-feet-request.json').write_text(json.dumps(r))

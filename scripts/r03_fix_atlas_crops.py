@@ -1,0 +1,7 @@
+from pathlib import Path
+import json
+p=Path('src/shared/UITheme.luau');s=p.read_text(encoding='utf-8').replace('LogoRect=Vector2.new(650,200)','AtlasScale=1024/1672,\n LogoRect=Vector2.new(650,200)*(1024/1672)');p.write_text(s,encoding='utf-8')
+p=Path('src/client/LabHUD.client.luau');s=p.read_text(encoding='utf-8').replace('Vector2.new(rect[1],rect[2]);icon.ImageRectSize=Vector2.new(rect[3],rect[4])','Vector2.new(rect[1],rect[2])*Theme.AtlasScale;icon.ImageRectSize=Vector2.new(rect[3],rect[4])*Theme.AtlasScale');p.write_text(s,encoding='utf-8')
+p=Path('src/first/Entry.client.luau');s=p.read_text(encoding='utf-8').replace('Vector2.new(650,200)','Vector2.new(650,200)*(1024/1672)');p.write_text(s,encoding='utf-8')
+r=[dict(label='r03-atlas-crop-fix',name='execute_luau',arguments=dict(studio_id='62c81645-c228-4b4d-a6ba-7cf2cbf8da1c',datamodel_type='Client',code='local g=game.Players.LocalPlayer.PlayerGui.RaceAndRaidLabHUD local factor=1024/1672 local logo=g.HUDRoot.Brand.Logo logo.ImageRectSize=Vector2.new(650,200)*factor for _,v in g.HUDRoot.Navigation:GetDescendants() do if v:IsA("ImageLabel") then v.ImageRectOffset*=factor v.ImageRectSize*=factor end end return "Crops adjusted to rendered atlas size; verify screenshot"')),dict(label='r03-main-driving',name='screen_capture',arguments=dict(studio_id='62c81645-c228-4b4d-a6ba-7cf2cbf8da1c',capture_id='r03-main-driving'))]
+Path('docs/mcp-check/r03-crop-check-request.json').write_text(json.dumps(r))

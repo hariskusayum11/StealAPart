@@ -1,0 +1,7 @@
+from pathlib import Path
+import json
+sid='62c81645-c228-4b4d-a6ba-7cf2cbf8da1c'
+r=[]
+for label,pos,target in [('r02-garage-city',[-640,230,380],[-640,0,0]),('r02-highway-order',[1300,1600,1700],[1300,15,70]),('r02-facilities',[-700,650,720],[-700,0,-20]),('r02-bridge',[1100,110,280],[1050,25,170])]:r.append(dict(label=label,name='screen_capture',arguments=dict(studio_id=sid,capture_id=label,camera_position=pos,look_at_position=target)))
+r.append(dict(label='r02-facility-collision-audit',name='execute_luau',arguments=dict(studio_id=sid,datamodel_type='Server',code='local l=require(game.ReplicatedStorage.RaceAndRaid.HubLayout) local p=RaycastParams.new() p.FilterType=Enum.RaycastFilterType.Include p.FilterDescendantsInstances={workspace.CargoTestCourse,workspace.Terrain} local a={} for _,f in l.Facilities do local z=if f.position.Z>0 then 220 else -220 local n=0 local blocked=false for t=0,1,.1 do local c=Vector3.new(f.position.X,0,z):Lerp(f.position,t) local h=workspace:Raycast(c+Vector3.new(0,30,0),Vector3.new(0,-70,0),p) if h then n+=1 else blocked=true end end table.insert(a,{name=f.name,supportSamples=n,missing=blocked}) end return a')))
+Path('docs/mcp-check/r02-photos.json').write_text(json.dumps(r))

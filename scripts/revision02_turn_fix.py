@@ -1,0 +1,7 @@
+from pathlib import Path
+p=Path('src/server/CargoCourse.luau');s=p.read_text(encoding='utf-8');needle=' -- City perimeter service streets avoid cutting through garage lots.';s=s.replace(needle,''' -- Wide flush junction aprons give starter bikes room to turn onto the highway.
+ for _,plot in Layout.Plots do
+  pad("GarageJunction",Vector3.new(plot.position.X,0,0),64,64,asphalt)
+ end
+'''+needle);p.write_text(s,encoding='utf-8')
+p=Path('scripts/qa/r02_virtual_driver.luau');s=p.read_text(encoding='utf-8');s=s.replace('Vector3.new(-760,0,35),Vector3.new(-760,0,20)','Vector3.new(-760,0,60),Vector3.new(-760,0,40)');s=s.replace('Vector3.new(-742-18*math.cos(a),0,20-18*math.sin(a))','Vector3.new(-720-40*math.cos(a),0,40-40*math.sin(a))');s=s.replace('Magnitude<13','Magnitude<6');s=s.replace('angle*.9','angle*1.4');s=s.replace('if math.abs(angle)>.6 then 10 elseif math.abs(angle)>.25 then 18 else 32','if index<12 or index>#points-8 then 7 elseif math.abs(angle)>.4 then 9 elseif math.abs(angle)>.15 then 15 else 28');s=s.replace('reason="timeout"','reason="timeout"');s=s.replace('player:SetAttribute("RouteQAState","running")','player:SetAttribute("RouteQAResult",nil)\nplayer:SetAttribute("RouteQAState","running")');p.write_text(s,encoding='utf-8')
