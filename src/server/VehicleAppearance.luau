@@ -7,7 +7,7 @@ local frontFixed: {[string]: boolean} = {
  ["default.011"]=true, ["default.013"]=true, speedook=true,
  forks_front=true, mudguard=true, ["mudguard.001"]=true,
 }
-local BODY_FIT_VERSION = 2
+local BODY_FIT_VERSION = 3
 -- C1: meshes are added after A-Chassis Initialize has welded and unanchored the bike, so they must be
 -- joined to the same vendor parts Initialize would use (Body→DriveSeat, Parts→wheel, Fixed→Arm,
 -- WheelFixed→Axle). Massless + CanCollide=false keeps chassis mass, inertia and contacts unchanged.
@@ -55,11 +55,37 @@ function Appearance.apply(bike: Model, template: Model)
  local sourceFront = clone:FindFirstChild("wheel_front",true) :: MeshPart
  local sourceRear = clone:FindFirstChild("wheel_rear",true) :: MeshPart
  assert(sourceFront and sourceRear, "Body requires separated front/rear wheel meshes")
- local wheelbase = (front.Position-rear.Position).Magnitude
+ -- C1 rev2: fit in the CHASSIS frame, not the world frame. After Initialize unanchors the bike, the
+ -- parked chassis leans (~16 deg measured) and the front swings (~12 deg), so a world-level fit welded
+ -- in a 13-25 deg error (tilted shell, wobbling wheels, crooked handlebar). The DriveSeat right vector
+ -- is the rear axle; the steering hinge angle is undone so the front group is fitted straight ahead.
+ local seatPart = bike:WaitForChild("DriveSeat") :: BasePart
+ local right = seatPart.CFrame.RightVector
+ local straighten = CFrame.identity -- world transform: current steered front -> straight-ahead front
+ local steerDeg = 0
+ for _,d in bike:GetDescendants() do
+  if d:IsA("HingeConstraint") and d.Name=="Rotate" and d.Attachment0 and d.Attachment1 and d.Attachment1.Parent==front:FindFirstChild("SystemHub") then
+   local pivot, axis = d.Attachment0.WorldPosition, d.Attachment0.WorldAxis
+   local best = -1
+   for _,sign in {1,-1} do
+    local s = CFrame.new(pivot)*CFrame.fromAxisAngle(axis, sign*math.rad(d.CurrentAngle))*CFrame.new(-pivot)
+    local fit = math.abs(s.Rotation:VectorToWorldSpace(front.CFrame.RightVector):Dot(right))
+    if fit > best then best = fit; straighten = s end
+   end
+   steerDeg = d.CurrentAngle
+  end
+ end
+ local frontStraight = straighten * front.Position
+ local ahead = frontStraight - rear.Position
+ ahead = (ahead - right*ahead:Dot(right)).Unit
+ local wheelbase = (frontStraight-rear.Position).Magnitude
  clone:ScaleTo(wheelbase/(sourceFront.Position-sourceRear.Position).Magnitude)
- local from = CFrame.lookAt(sourceRear.Position, Vector3.new(sourceFront.Position.X,sourceRear.Position.Y,sourceFront.Position.Z))
- local target = CFrame.lookAt(rear.Position,Vector3.new(front.Position.X,rear.Position.Y,front.Position.Z))
- local transform = target * from:Inverse()
+ local from = CFrame.lookAt(sourceRear.Position, sourceFront.Position)
+ local chassisFrame = CFrame.lookAt(rear.Position, rear.Position+ahead, right:Cross(ahead))
+ local transform = chassisFrame * from:Inverse()
+ local unsteer = straighten:Inverse()
+ bike:SetAttribute("BodyFitSteerAtFitDeg", math.floor(steerDeg*10+.5)/10)
+ bike:SetAttribute("BodyFitSeatRollAtFitDeg", math.floor(math.deg(math.asin(math.clamp(right.Y,-1,1)))*10+.5)/10)
  for _,v in body:GetDescendants() do if v:IsA("BasePart") then v.Transparency=1 end end
  for _,v in bike:GetDescendants() do
   if v:IsA("Constraint") then v.Visible=false end
@@ -87,13 +113,17 @@ function Appearance.apply(bike: Model, template: Model)
    local wheel = if v.Name=="wheel_front" then front else rear
    local diameter=math.max(v.Size.Y,v.Size.Z)
    v.Size *= wheel.Size.Y/diameter
-   v.CFrame = v.CFrame.Rotation + wheel.Position
+   -- Mesh axle is its local X, like the vendor Cylinder wheel: copy the wheel's exact rotation so the
+   -- mesh spins on the real hinge axis (no wobble) whatever the chassis lean/steer is at fit time.
+   v.CFrame = wheel.CFrame.Rotation + wheel.Position
    v.Parent = wheel:WaitForChild("Parts")
    target = wheel
   elseif v.Name=="disc" then
+   v.CFrame = front.CFrame.Rotation + (unsteer * v.Position)
    v.Parent=front:WaitForChild("Parts")
    target = front
   elseif frontFixed[v.Name] then
+   v.CFrame = unsteer * v.CFrame
    v.Parent=front:WaitForChild("Fixed")
    target = front:WaitForChild("Arm") :: BasePart
   elseif v.Name=="forks_rear" then
