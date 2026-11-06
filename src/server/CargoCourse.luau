@@ -33,10 +33,11 @@ function Course.build():Model
  -- v11: only the short straight throat remains between the Y-fork gateway and MainHighway (X=-250).
  rect("CityHighway",Vector3.new(throatMid,0,0),throatLen,44,asphalt)
  local step=20
- for x=-250,3049,step do
-  local a=Layout.RoutePoint(x);local b=Layout.RoutePoint(math.min(x+step,3050))
+ local endX=Layout.RouteEndX;local bridgeX=Layout.BridgeX
+ for x=-250,endX-1,step do
+  local a=Layout.RoutePoint(x);local b=Layout.RoutePoint(math.min(x+step,endX))
   local ra=CFrame.lookAt(a,Layout.RoutePoint(x+1)).RightVector;ra=Vector3.new(ra.X,0,ra.Z).Unit
-  local rb=CFrame.lookAt(b,Layout.RoutePoint(math.min(x+step,3050)+1)).RightVector;rb=Vector3.new(rb.X,0,rb.Z).Unit
+  local rb=CFrame.lookAt(b,Layout.RoutePoint(math.min(x+step,endX)+1)).RightVector;rb=Vector3.new(rb.X,0,rb.Z).Unit
   strip(a,b,ra,rb,-22,-16,shoulder,"HighwayShoulder")
   strip(a,b,ra,rb,-16,16,asphalt,"MainHighway")
   strip(a,b,ra,rb,16,22,shoulder,"HighwayShoulder")
@@ -44,7 +45,7 @@ function Course.build():Model
   local cf=CFrame.lookAt((a+b)/2,b)
   for _,side in {-1,1} do mark("EdgeLine",Vector3.new(.22,.025,(b-a).Magnitude),cf*CFrame.new(side*16,.045,0),white) end
   mark("CenterDash",Vector3.new(.25,.025,7),cf*CFrame.new(0,.045,0),gold)
-  if x>=990 and x<=1100 then for _,side in {-1,1} do S.part(model,"BridgeRail",Vector3.new(.5,2,(b-a).Magnitude),cf*CFrame.new(side*22.3,1.15,0),cyan,Enum.Material.Metal) end end
+  if x>=bridgeX-50 and x<bridgeX+50 then for _,side in {-1,1} do S.part(model,"BridgeRail",Vector3.new(.5,2,(b-a).Magnitude),cf*CFrame.new(side*22.3,1.15,0),cyan,Enum.Material.Metal) end end
   if x%200==150 then task.wait() end
  end
  -- Same dash phase as v10 (-990+20k), limited to the throat.
@@ -55,21 +56,28 @@ function Course.build():Model
   rect("CityShoulder",Vector3.new(throatMid,0,side*19),throatLen,6,shoulder,2)
   mark("CityEdgeLine",Vector3.new(throatLen,.025,.22),CFrame.new(throatMid,.045,side*16),white)
  end
- local ep=Layout.RoutePoint(3050)
+ local ep=Layout.RoutePoint(endX)
  rect("EndTurnaround",ep+Vector3.new(140,0,65),280,260,asphalt)
  for _,zone in Layout.Zones do
   local pos=zone.position
-  rect("ZonePad",pos+Vector3.new(0,0,-70),100,72,shoulder,2)
-  -- Two portals share the exact outer-road vertices, never overlap a flat access slab.
-  for _,dx in {-20,0} do
-   local p1=Layout.RoutePoint(pos.X+dx);local p2=Layout.RoutePoint(pos.X+dx+20)
-   local r1=CFrame.lookAt(p1,Layout.RoutePoint(pos.X+dx+1)).RightVector
-   local r2=CFrame.lookAt(p2,Layout.RoutePoint(pos.X+dx+21)).RightVector
+  local side,near=zone.side,zone.padNear
+  rect("ZonePad",zone.padCentre,Layout.ZonePadSize.X,Layout.ZonePadSize.Z,shoulder,2)
+  -- Four portals share the exact outer-road vertices, never overlap a flat access slab.
+  -- >=80-stud connector (room to U-turn on the pad without reverse). Portals start on a road vertex
+  -- (sections every 20 studs from X=-250) so they share the exact outer-road vertices: 4 portals when the
+  -- zone is vertex-aligned, 5 (= full 100-stud pad width) when it is not.
+  local xa=-250+20*math.floor((pos.X-40+250)/20)
+  while xa<pos.X+40 do
+   local xb=xa+20
+   local p1=Layout.RoutePoint(xa);local p2=Layout.RoutePoint(xb)
+   local r1=CFrame.lookAt(p1,Layout.RoutePoint(xa+1)).RightVector
+   local r2=CFrame.lookAt(p2,Layout.RoutePoint(xb+1)).RightVector
    r1=Vector3.new(r1.X,0,r1.Z).Unit;r2=Vector3.new(r2.X,0,r2.Z).Unit
-   S.quad(model,p1-r1*22,p2-r2*22,Vector3.new(pos.X+dx,pos.Y,pos.Z-34),Vector3.new(pos.X+dx+20,pos.Y,pos.Z-34),asphalt,"ZoneAccessRamp")
+   S.quad(model,p1+r1*22*side,p2+r2*22*side,Vector3.new(xa,pos.Y,pos.Z+side*near),Vector3.new(xb,pos.Y,pos.Z+side*near),asphalt,"ZoneAccessRamp")
+   xa=xb
   end
   local tag=Instance.new("Model");tag.Name=string.format("Zone%02d",zone.id);tag:SetAttribute("ZoneId",zone.id);tag.Parent=model
-  sign(pos+Vector3.new(0,12,-116),string.format("%02d %s",zone.id,zone.name))
+  sign(zone.padCentre+Vector3.new(0,12,side*(Layout.ZonePadSize.Z/2+10)),string.format("%02d %s",zone.id,zone.name))
  end
  for _,plot in Layout.Plots do
   local c=plot.position;local frame=Layout.PlotFrame(plot)
@@ -169,7 +177,7 @@ function Course.build():Model
  dashes("RingDash",city.SpeedLaneCentre-Vector3.new(0,0,city.SpeedLaneLength/2),city.SpeedLaneCentre+Vector3.new(0,0,city.SpeedLaneLength/2))
  sign(city.SpeedLaneCentre+Vector3.new(-city.SpeedLaneWidth/2-18,12,0),"SPEED TEST LANE • Candidate",math.pi/2)
  S.flat(model,rects)
- for _,x in {1014,1050,1086} do
+ for _,x in {bridgeX-36,bridgeX,bridgeX+36} do
   local p=Layout.RoutePoint(x)
   for _,z in {-17,17} do S.part(model,"BridgePier",Vector3.new(3,p.Y+30,3),CFrame.new(p.X,(p.Y-30)/2,p.Z+z),Color3.fromRGB(132,139,146),Enum.Material.Concrete) end
  end

@@ -128,7 +128,7 @@ RunService.Heartbeat:Connect(function(dt: number)
  if pos and pos.X> -380 then
   label="ทางหลวง / Highway"
   for _,z in Layout.Zones do if pos.X>=z.position.X-70 then label=string.format("Zone %02d • %s",z.id,z.name) end end
-  local road=Layout.RoutePoint(math.clamp(pos.X,-1000,3050));if math.abs(pos.Z-road.Z)>200 then label="นอกเส้นทาง / Off route" end
+  local road=Layout.RoutePoint(math.clamp(pos.X,-1000,Layout.RouteEndX));if math.abs(pos.Z-road.Z)>200 then label="นอกเส้นทาง / Off route" end
  end
  zoneText.Text=label
  local coins=player:GetAttribute("Coins");local power=player:GetAttribute("Power")

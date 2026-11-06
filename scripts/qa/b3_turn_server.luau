@@ -5,7 +5,7 @@ local ch=p.Character or p.CharacterAdded:Wait()
 local hum=ch:WaitForChild("Humanoid") :: Humanoid
 local root=ch:WaitForChild("HumanoidRootPart") :: BasePart
 local L=require(game.ReplicatedStorage.RaceAndRaid.HubLayout)
-local ep=L.RoutePoint(3050);local c=ep+Vector3.new(140,0,65)
+local ep=L.RoutePoint(L.RouteEndX);local c=ep+Vector3.new(140,0,65)
 local ray=workspace:Raycast(c+Vector3.new(0,60,0),Vector3.new(0,-120,0))
 assert(ray,"no ground")
 local bike=(workspace:WaitForChild("Vehicles"):WaitForChild("StreetCub_"..game.Players:GetPlayers()[1].UserId)) :: Model

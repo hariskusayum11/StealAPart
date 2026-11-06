@@ -5,18 +5,30 @@ function Terrain.build()
  local t=workspace.Terrain
  local foundationVersion=Layout.TerrainVersion or Layout.Version
  if t:GetAttribute("HighwayFoundationVersion")==foundationVersion then return end
+ local endX,bridgeX=Layout.RouteEndX,Layout.BridgeX
  local function height(x:number,z:number):number
-  local p=Layout.RoutePoint(math.clamp(x,-1000,3050));local away=math.abs(z-p.Z)
+  local p=Layout.RoutePoint(math.clamp(x,-1000,endX));local away=math.abs(z-p.Z)
   local top=p.Y-.12+math.clamp((away-120)/300,0,1)*(8+6*math.noise(x/380,z/420))
   if x< -320 and math.abs(z)<550 then top=-.12 end
   for _,zone in Layout.Zones do
-   local dx=math.abs(x-zone.position.X);local dz=math.abs(z-(zone.position.Z-70))
+   local dx=math.abs(x-zone.position.X);local dz=math.abs(z-zone.padCentre.Z)
    if dx<70 and dz<56 and away>28 then
     local weight=math.min(math.clamp((70-dx)/20,0,1),math.clamp((56-dz)/20,0,1),math.clamp((away-28)/6,0,1))
     top=top*(1-weight)+(zone.position.Y-.12)*weight
    end
+   -- Keep terrain clearly below the sloped 80-stud connector (road edge -> pad edge) and the pad itself:
+   -- the pad is flat while the road climbs, so a blended voxel surface would poke through otherwise.
+   -- Ground follows the road-edge -> pad profile just below the surfaces (connector and pad), fading
+   -- back to the natural blend over 12 studs beside them: no protrusion and no ditch at any edge.
+   local off=(z-p.Z)*zone.side
+   if dx<62 and off>18 and off<zone.padNear+Layout.ZonePadSize.Z+12 then
+    local f=math.clamp((off-22)/(zone.padNear-22),0,1)
+    local surface=p.Y+(zone.position.Y-p.Y)*f
+    local w=math.clamp((62-dx)/12,0,1)*math.clamp((zone.padNear+Layout.ZonePadSize.Z+12-off)/12,0,1)
+    top=top*(1-w)+math.min(top,surface-.45)*w
+   end
   end
-  if x>=3030 and x<=3350 and z>p.Z-85 and z<p.Z+215 then top=Layout.RoutePoint(3050).Y-.12 end
+  if x>=endX-40 and x<=endX+300 and z>p.Z-85 and z<p.Z+215 then top=Layout.RoutePoint(endX).Y-.12 end
   local edge=math.min(x-Layout.MinX,Layout.MaxX-x,Layout.MaxZ-math.abs(z))
   local berm=math.clamp((100-edge)/100,0,1)
   return top+berm*berm*(32+5*math.noise(x/190,z/190))
@@ -49,13 +61,13 @@ function Terrain.build()
   t:WriteVoxels(region,4,mats,occupancy)
  end
  for x=-1120,-321,64 do fine(x,math.min(x+64,-320),-528,528,-12,16);task.wait() end
- for x=-320,3359,64 do
-  local p=Layout.RoutePoint(math.clamp(x+32,-1000,3050));local z=math.floor(p.Z/4)*4
+ for x=-320,endX+309,64 do
+  local p=Layout.RoutePoint(math.clamp(x+32,-1000,endX));local z=math.floor(p.Z/4)*4
   local bottom=math.floor(p.Y/4)*4-12
-  fine(x,x+64,z-120,z+120,bottom,bottom+36);task.wait()
+  fine(x,x+64,z-152,z+152,bottom,bottom+36);task.wait() -- covers both-side pads (far edge <= 111 + bend)
  end
- local p=Layout.RoutePoint(3050)
- for x=3040,3319,64 do fine(x,x+64,math.floor((p.Z-84)/4)*4,math.ceil((p.Z+216)/4)*4,0,36);task.wait() end
+ local p=Layout.RoutePoint(endX)
+ for x=endX-10,endX+269,64 do fine(x,x+64,math.floor((p.Z-84)/4)*4,math.ceil((p.Z+216)/4)*4,0,36);task.wait() end
  -- Boundary studies only, far outside every drive/loot corridor: native canal and field banks.
  -- Zone02 canal study is landscape, not an imported market or completed zone.
  local canalY=height(50,-850)
@@ -67,8 +79,9 @@ function Terrain.build()
   t:FillBlock(CFrame.new(350,y-.4,z),Vector3.new(210,1.5,3),Enum.Material.Ground)
  end
  -- Supported bridge remains the only exception to a ground-level shoulder.
- t:FillBlock(CFrame.new(1050,5,140),Vector3.new(80,70,880),Enum.Material.Air)
- t:FillBlock(CFrame.new(1050,-16,140),Vector3.new(80,10,880),Enum.Material.Water)
+ local bridgeZ=Layout.RoutePoint(bridgeX).Z
+ t:FillBlock(CFrame.new(bridgeX,5,bridgeZ),Vector3.new(80,70,880),Enum.Material.Air)
+ t:FillBlock(CFrame.new(bridgeX,-16,bridgeZ),Vector3.new(80,10,880),Enum.Material.Water)
  t:SetAttribute("HighwayFoundationVersion",foundationVersion)
 end
 return Terrain

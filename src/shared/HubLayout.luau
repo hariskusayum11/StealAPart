@@ -1,15 +1,17 @@
 --!strict
 local Layout = {
- -- v11 rev2 (owner approved 2026-11-05): Central Hub + Y-fork gateway. Highway X>=-250 unchanged.
- Version=11,
- TerrainVersion=9,
+ -- v11 rev2 (owner approved 2026-11-05): Central Hub + Y-fork gateway.
+ -- v12 (Master Directive 2026-11-06): Layout B, zones every 250 studs, odd zones left / even right.
+ Version=12,
+ TerrainVersion=10,
  Pickup=Vector3.new(-250,0,-40),
  -- Deposit/BikeStart/Spawn are derived from the G1 PlotFrame below (single source of truth).
  Deposit=Vector3.zero,
  BikeStart=CFrame.identity,
  SpawnCFrame=CFrame.identity,
  DepositPlot="G1",
- MinX=-1250,MaxX=3800,MaxZ=1100,
+ MinX=-1250,MaxX=0,MaxZ=1100, -- MaxX derived from RouteEndX below
+ ZoneSpacing=250,ZonePadSize=Vector3.new(100,0,72),ZonePadClearance=4,
  -- Plot-local offsets. Local -Z is the garage front (towards the hub), +Z is the back wall.
  PlotLocal={
   Building=Vector3.new(0,0,23),
@@ -51,17 +53,17 @@ local Layout = {
  },
  Zones={
   {id=1,name="ซอยช่างบ้านเรา",position=Vector3.new(-250,0,0)},
-  {id=2,name="ตลาดน้ำอะไหล่ซิ่ง",position=Vector3.new(50,0,-70)},
-  {id=3,name="ทุ่งนาซิ่งสายฝุ่น",position=Vector3.new(350,0,50)},
-  {id=4,name="ถนนตลาดแซ่บ",position=Vector3.new(650,0,110)},
-  {id=5,name="ดอยโค้งร้อยศอก",position=Vector3.new(950,0,0)},
-  {id=6,name="สวนยางสายแรง",position=Vector3.new(1250,0,-100)},
-  {id=7,name="ท่าเรือซิ่งริมเล",position=Vector3.new(1550,0,0)},
-  {id=8,name="นิคมเหล็กเดือด",position=Vector3.new(1850,0,-70)},
-  {id=9,name="บางกอกไนท์เรซ",position=Vector3.new(2150,0,50)},
-  {id=10,name="อุโมงค์ช่างเถื่อน",position=Vector3.new(2450,0,110)},
-  {id=11,name="นครนีออนไทยแลนด์",position=Vector3.new(2750,0,0)},
-  {id=12,name="คลังอะไหล่ตำนาน",position=Vector3.new(3050,0,-100)},
+  {id=2,name="ตลาดน้ำอะไหล่ซิ่ง",position=Vector3.new(0,0,0)},
+  {id=3,name="ทุ่งนาซิ่งสายฝุ่น",position=Vector3.new(250,0,0)},
+  {id=4,name="ถนนตลาดแซ่บ",position=Vector3.new(500,0,0)},
+  {id=5,name="ดอยโค้งร้อยศอก",position=Vector3.new(750,0,0)},
+  {id=6,name="สวนยางสายแรง",position=Vector3.new(1000,0,0)},
+  {id=7,name="ท่าเรือซิ่งริมเล",position=Vector3.new(1250,0,0)},
+  {id=8,name="นิคมเหล็กเดือด",position=Vector3.new(1500,0,0)},
+  {id=9,name="บางกอกไนท์เรซ",position=Vector3.new(1750,0,0)},
+  {id=10,name="อุโมงค์ช่างเถื่อน",position=Vector3.new(2000,0,0)},
+  {id=11,name="นครนีออนไทยแลนด์",position=Vector3.new(2250,0,0)},
+  {id=12,name="คลังอะไหล่ตำนาน",position=Vector3.new(2500,0,0)},
  },
  Facilities={
   -- Placeholders only: no backend exists for any facility.
@@ -104,6 +106,20 @@ do
  Layout.BikeStart=frame*CFrame.new(Layout.PlotLocal.BikeStart)
  Layout.SpawnCFrame=frame*CFrame.new(Layout.PlotLocal.Spawn)
 end
-for _,zone in Layout.Zones do zone.position=Layout.RoutePoint(zone.position.X) end
-Layout.Pickup=Layout.Zones[1].position+Vector3.new(0,0,-55)
+-- Zones sit on the analytic route. Driving towards +X, left is -Z: odd zones left, even zones right.
+-- padNear = gap from the route centreline to the pad's road-side edge, widened where the road bends
+-- towards the pad so the pad never overlaps the 44-stud road (22 half-width + clearance).
+for i,zone in Layout.Zones do
+ zone.position=Layout.RoutePoint(zone.position.X)
+ local side=if i%2==1 then -1 else 1
+ local half=Layout.ZonePadSize.X/2;local shift=0
+ for dx=-half,half,5 do shift=math.max(shift,(Layout.RoutePoint(zone.position.X+dx).Z-zone.position.Z)*side) end
+ local near=math.max(34,22+Layout.ZonePadClearance+shift)
+ zone.side=side;zone.padNear=near
+ zone.padCentre=zone.position+Vector3.new(0,0,side*(near+Layout.ZonePadSize.Z/2))
+end
+Layout.RouteEndX=Layout.Zones[#Layout.Zones].position.X+60 -- road continues past Zone 12 into the turnaround
+Layout.BridgeX=(Layout.Zones[5].position.X+Layout.Zones[6].position.X)/2 -- bridge in the Z05-Z06 gap
+Layout.MaxX=Layout.RouteEndX+750
+Layout.Pickup=Layout.Zones[1].position+Vector3.new(0,0,Layout.Zones[1].side*(Layout.Zones[1].padNear+21))
 return Layout

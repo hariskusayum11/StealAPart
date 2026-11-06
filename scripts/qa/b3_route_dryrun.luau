@@ -110,8 +110,8 @@ elseif CASE=="CARGO" then
 elseif CASE=="ROUNDTRIP" then
  limit=720
  garageExit(G1,1);toThroatOut(-1);curV=14;goto(Vector3.new(-262,0,-8))
- curV=28;follow(highway(-250,3048),8)
- -- U-turn and lane change both completed inside the EndTurnaround pad (x>=3050).
+ curV=28;follow(highway(-250,L.RouteEndX-2),8)
+ -- U-turn and lane change both completed inside the EndTurnaround pad (x>=RouteEndX).
  curV=10;forward(70);curV=7;arc(40,180,-1);forward(6);arc(32,90,-1);arc(32,90,1)
  local back=math.floor((pos.X-8)/4)*4
  curV=28;follow(reversed(highway(-250,back)),8)

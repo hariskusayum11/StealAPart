@@ -3,6 +3,7 @@
 -- during the drive. Routes are generated from HubLayout (keep-left lanes, 8 studs from road centre).
 -- __CASE__ = G1..G6 | CARGO | ROUNDTRIP | SPEEDLANE | GRASS
 local CASE="__CASE__"
+local HWV=tonumber("__HWV__") or 28 -- highway target speed (B3 default 28; M3 uses 45 and full throttle)
 local HttpService=game:GetService("HttpService")
 local player=game.Players.LocalPlayer
 local L=require(game.ReplicatedStorage.RaceAndRaid.HubLayout)
@@ -118,12 +119,28 @@ elseif CASE=="CARGO" then
 elseif CASE=="ROUNDTRIP" then
  limit=720
  garageExit(G1,1);toThroatOut(-1);curV=14;goto(Vector3.new(-262,0,-8))
- curV=28;follow(highway(-250,3048),8)
- -- U-turn and lane change both completed inside the EndTurnaround pad (x>=3050).
+ curV=HWV;follow(highway(-250,L.RouteEndX-2),8)
+ -- U-turn and lane change both completed inside the EndTurnaround pad (x>=RouteEndX).
  curV=10;forward(70);curV=7;arc(40,180,-1);forward(6);arc(32,90,-1);arc(32,90,1)
  local back=math.floor((pos.X-8)/4)*4
- curV=28;follow(reversed(highway(-250,back)),8)
+ curV=HWV;follow(reversed(highway(-250,back)),8)
  curV=12;goto(Vector3.new(-340,0,8));fromThroatIn(-1);garageReturn(G1,-1,false)
+elseif CASE=="ZONES" then
+ -- M3: visit all 12 alternating zones: up the access connector, U-turn on the pad, back to the highway.
+ limit=900
+ garageExit(G1,1);toThroatOut(-1) -- ends at (-340,-8), before Zone 01's connector
+ local x=-250
+ for _,z in L.Zones do
+  local zx,s,near=z.position.X,z.side,z.padNear
+  local road=L.RoutePoint(zx)
+  if zx-70>x+4 then curV=HWV;follow(highway(x,zx-70),8) end
+  curV=10;goto(Vector3.new(zx-40,0,road.Z+s*10)) -- arc crosses the shoulder->pad band inside the connector
+  curV=7;arcTo(Vector3.new(0,0,s),28)
+  curV=6;goto(Vector3.new(pos.X,0,road.Z+s*(near+30)));emit(pos,string.format("zone%02d",z.id))
+  arcTo(Vector3.new(1,0,0),22);arcTo(Vector3.new(0,0,-s),22) -- exits at zx+32 (connector spans zx+-40)
+  goto(Vector3.new(pos.X,0,road.Z+s*20));curV=7;arcTo(Vector3.new(1,0,0),28)
+  curV=10;local nx=pos.X+20;goto(Vector3.new(nx,0,L.RoutePoint(nx).Z-8));x=math.ceil(nx/4)*4
+ end
 elseif CASE=="SPEEDLANE" or CASE=="GRASS" then
  garageExit(G1,-1);curV=14;goto(Vector3.new(cornerX,0,laneZ(-1,-1)));follow(reversed(cornerBottomToSide(-1)),8)
  if CASE=="GRASS" then
@@ -152,6 +169,7 @@ end
 local function steer(v:number) local dz=.15;control("ContlrSteer",Vector3.new(if math.abs(v)<.001 then 0 else math.sign(v)*(dz+(1-dz)*math.abs(v)),0,0)) end
 local function throttle(v:number) control("ContlrThrottle",Vector3.new(0,0,v)) end
 local function brake(v:number) control("ContlrBrake",Vector3.new(0,0,v)) end
+local zt:{[string]:number}={}
 local resultKey="B3Result_"..CASE
 player:SetAttribute(resultKey,nil)
 task.spawn(function()
@@ -221,19 +239,23 @@ task.spawn(function()
     k+=1
    end
    if turn>60 then vcap=math.min(vcap,7) elseif turn>30 then vcap=math.min(vcap,10) elseif turn>15 then vcap=math.min(vcap,16) end
-   throttle(if speed<vcap then .7 else 0);brake(if speed>vcap+3 then .35 else 0)
+   throttle(if speed<vcap then (if vcap>40 then 1 else .7) else 0);brake(if speed>vcap+3 then .35 else 0)
    -- telemetry
    local g=workspace:Raycast(seat.Position,Vector3.new(0,-8,0),rp)
    if g and g.Instance==workspace.Terrain then st.grass+=1;if not path[idx].grass then st.unexpectedGrass+=1 end end
    if math.abs(vel.Y)>4 then st.bumps+=1 end
    st.minUpY=math.min(st.minUpY,seat.CFrame.UpVector.Y);if st.minUpY<.35 then reason="fallen";break end
-   for _,z in L.Zones do if (flat(z.position)-p).Magnitude<35 then visited[tostring(z.id)]=true end end
+   for _,z in L.Zones do if (flat(z.position)-p).Magnitude<35 or (flat(z.padCentre)-p).Magnitude<40 then visited[tostring(z.id)]=true end end
+   -- first time each zone X is passed outbound (+X) and the gate line X=-330 both ways (timing)
+   for _,z in L.Zones do local k=string.format("Z%02d",z.id);if not zt[k] and p.X>=z.position.X then zt[k]=math.floor((os.clock()-t0)*10)/10 end end
+   if not zt.gateOut and p.X>=-330 then zt.gateOut=math.floor((os.clock()-t0)*10)/10 end
+   if zt.gateOut and not zt.gateIn and p.X<-330 then zt.gateIn=math.floor((os.clock()-t0)*10)/10 end
    if os.clock()>nextS then nextS=os.clock()+4;table.insert(samples,{t=math.floor(os.clock()-t0),x=math.floor(p.X),z=math.floor(p.Z),v=math.floor(speed*10)/10,i=idx}) end
    task.wait(.05)
   end
   dayConn:Disconnect()
   throttle(0);steer(0);brake(1)
-  out.reason=reason;out.elapsed=math.floor((os.clock()-t0)*10)/10;out.progress=idx.."/"..#path;out.stats=st;out.events=events
+  out.zoneTimes=zt;out.reason=reason;out.elapsed=math.floor((os.clock()-t0)*10)/10;out.progress=idx.."/"..#path;out.stats=st;out.events=events
   local vz={};for id in visited do table.insert(vz,tonumber(id)) end;table.sort(vz);out.zonesVisited=vz
   out.garageDay=day;out.samples=samples;out.final={x=math.floor(seat.Position.X),z=math.floor(seat.Position.Z)}
  end)
