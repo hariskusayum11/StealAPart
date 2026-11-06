@@ -7,11 +7,34 @@ local frontFixed: {[string]: boolean} = {
  ["default.011"]=true, ["default.013"]=true, speedook=true,
  forks_front=true, mudguard=true, ["mudguard.001"]=true,
 }
+local BODY_FIT_VERSION = 2
+-- C1: meshes are added after A-Chassis Initialize has welded and unanchored the bike, so they must be
+-- joined to the same vendor parts Initialize would use (Body→DriveSeat, Parts→wheel, Fixed→Arm,
+-- WheelFixed→Axle). Massless + CanCollide=false keeps chassis mass, inertia and contacts unchanged.
+local function attach(part: BasePart, target: BasePart)
+ part.Anchored = false
+ local weld = Instance.new("WeldConstraint")
+ weld.Name = "BodyFitWeld"
+ weld.Part0 = target
+ weld.Part1 = part
+ weld.Parent = part
+end
+local function waitForChassis(bike: Model, seat: Instance?, front: BasePart, rear: BasePart)
+ -- Initialize creates Arm/Axle on each wheel and re-enables the DriveSeat as its final step.
+ local deadline = os.clock() + 20
+ while os.clock() < deadline do
+  local ready = front:FindFirstChild("Arm") and rear:FindFirstChild("Axle")
+  if ready and not (seat and seat:IsA("VehicleSeat") and seat.Disabled) then return end
+  task.wait(0.1)
+ end
+ warn("VehicleAppearance: A-Chassis Initialize did not finish within 20 s; body fit may not follow the bike")
+end
 function Appearance.apply(bike: Model, template: Model)
- if bike:GetAttribute("BodyFitVersion") == 1 then return end
+ if bike:GetAttribute("BodyFitVersion") == BODY_FIT_VERSION then return end
  local wheels = bike:WaitForChild("Wheels")
  local front = wheels:WaitForChild("F") :: BasePart
  local rear = wheels:WaitForChild("R") :: BasePart
+ waitForChassis(bike, bike:FindFirstChild("DriveSeat"), front, rear)
  for _,wheel in {front,rear} do
   for _,name in {"Parts","Fixed","WheelFixed"} do
    if not wheel:FindFirstChild(name) then
@@ -50,26 +73,37 @@ function Appearance.apply(bike: Model, template: Model)
   if not v:IsA("MeshPart") then continue end
   if v.Name:lower():find("logo") then continue end
   v.CFrame = transform * v.CFrame
-  v.CanCollide=false;v.CanTouch=false;v.CanQuery=false;v.Massless=true;v.Anchored=true
+  v.CanCollide=false;v.CanTouch=false;v.CanQuery=false;v.Massless=true;v.Anchored=true -- until welded below
   -- Exclude the branded fairing atlas; keep unbranded mechanical textures.
   if v.TextureID == "rbxassetid://13114470501" then
    v.TextureID=""
    v.Color=Color3.fromRGB(39,197,229)
    v.Material=Enum.Material.Metal
   end
+  -- Same targets as A-Chassis Initialize: spinning parts follow the wheel, steering parts the Arm,
+  -- swingarm parts the Axle, and the shell the DriveSeat. Never weld wheels/steering to the seat.
+  local target: BasePart
   if v.Name=="wheel_front" or v.Name=="wheel_rear" then
    local wheel = if v.Name=="wheel_front" then front else rear
    local diameter=math.max(v.Size.Y,v.Size.Z)
    v.Size *= wheel.Size.Y/diameter
    v.CFrame = v.CFrame.Rotation + wheel.Position
    v.Parent = wheel:WaitForChild("Parts")
+   target = wheel
   elseif v.Name=="disc" then
    v.Parent=front:WaitForChild("Parts")
+   target = front
   elseif frontFixed[v.Name] then
    v.Parent=front:WaitForChild("Fixed")
+   target = front:WaitForChild("Arm") :: BasePart
   elseif v.Name=="forks_rear" then
    v.Parent=rear:WaitForChild("WheelFixed")
-  else v.Parent=shell end
+   target = rear:WaitForChild("Axle") :: BasePart
+  else
+   v.Parent=shell
+   target = bike:WaitForChild("DriveSeat") :: BasePart
+  end
+  attach(v, target)
   v:SetAttribute("BodyFitMesh",true)
   count+=1
  end
@@ -86,7 +120,7 @@ function Appearance.apply(bike: Model, template: Model)
   end)
   hideDebug()
  end
- bike:SetAttribute("BodyFitVersion",1)
+ bike:SetAttribute("BodyFitVersion",BODY_FIT_VERSION)
  bike:SetAttribute("BodyMeshCount",count)
  bike:SetAttribute("BodySourceAssetId",13113759800)
 end
