@@ -9,8 +9,8 @@ local zoneMin,zoneMax=Layout.PlotLocal.DayZoneMin,Layout.PlotLocal.DayZoneMax
 local old={ClockTime=Lighting.ClockTime,Brightness=Lighting.Brightness,Ambient=Lighting.Ambient,OutdoorAmbient=Lighting.OutdoorAmbient,ExposureCompensation=Lighting.ExposureCompensation}
 local correction=Instance.new("ColorCorrectionEffect");correction.Name="G1BrightGarageDay";correction.Enabled=false;correction.Saturation=.08;correction.Contrast=.04;correction.TintColor=Color3.fromRGB(255,247,232);correction.Parent=Lighting
 local active=false
-local marker=workspace:WaitForChild("TestGarageDeposit") :: BasePart
-local markerTransparency=marker.Transparency
+local marker:BasePart?=nil -- legacy G1 deposit tile removed in M5 (deposit is at the Raid Gate)
+local markerTransparency=0
 local function apply(enabled:boolean)
  if active==enabled then return end
  active=enabled;correction.Enabled=enabled
@@ -30,7 +30,7 @@ while script.Parent do
   inside=l.X>=zoneMin.X and l.X<=zoneMax.X and l.Z>=zoneMin.Z and l.Z<=zoneMax.Z
  end
  apply(inside)
- marker.Transparency=if inside and workspace:GetAttribute("ShowDevelopmentMarkers")~=true then 1 else markerTransparency
+ if marker then marker.Transparency=if inside and workspace:GetAttribute("ShowDevelopmentMarkers")~=true then 1 else markerTransparency end
  task.wait(.5)
 end
 apply(false);correction:Destroy()

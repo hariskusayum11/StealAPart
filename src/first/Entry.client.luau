@@ -44,7 +44,7 @@ local function readyState():(number,string)
  if character and h and h.Health>0 and character:FindFirstChild("HumanoidRootPart") then n+=1 else table.insert(missing,"Spawn ที่อู่") end
  if workspace:GetAttribute("WorldGeometryReady") and workspace:FindFirstChild("CargoTestCourse") then n+=1 else table.insert(missing,"สร้างพื้นและถนน") end
  local vehicles=workspace:FindFirstChild("Vehicles");local b=vehicles and vehicles:FindFirstChild("StreetCub_"..player.UserId);local s=b and b:FindFirstChild("DriveSeat")
- if ((s and s:IsA("VehicleSeat") and not s.Disabled) or player:GetAttribute("PlotId")=="") and workspace:FindFirstChild("TestScrapPickup") and workspace:FindFirstChild("TestGarageDeposit") then n+=1 else table.insert(missing,"รถและ Cargo ทดสอบ") end
+ if ((s and s:IsA("VehicleSeat") and not s.Disabled) or player:GetAttribute("PlotId")=="") and workspace:FindFirstChild("RaidGate") then n+=1 else table.insert(missing,"รถของคุณและประตู Raid") end
  return n,table.concat(missing," · ")
 end
 local function load()
@@ -57,7 +57,9 @@ local function load()
     loading=false;art.Visible=false;track.Visible=false;shade.BackgroundTransparency=1;shade.Active=false
     card.Name="WelcomePopup";resize();close.Visible=true
     status.Text="ยินดีต้อนรับสู่ STEAL A PART!"
-    description.Text="F ขึ้น Street Cub → ขี่ไป Zone 01 → E เก็บอะไหล่\nกลับอู่แล้วกด E เพื่อฝาก Cargo\nStreet Hatch ยังไม่พร้อมใช้งาน"
+    description.Text="F ขึ้นรถของคุณ → รอประตู Raid เปิด → ขับไป Zone 01–12
+กด E ขโมยอะไหล่ → หนียาม → ขับผ่านประตู Raid = ฝากอัตโนมัติ
+Raid เปิด 5 นาที • ปิด 2 นาที"
     player:SetAttribute("LoadingComplete",true)
     if player:GetAttribute("WelcomeSeen") then dismiss() end
     return
@@ -77,9 +79,9 @@ task.spawn(function()
   if tutorial.Visible then
    local character=player.Character;local h=character and character:FindFirstChildOfClass("Humanoid")
    if h and h.SeatPart then seenRide=true end
-   local cargo=player:GetAttribute("TestCargo");if type(cargo)=="number" and cargo>0 then seenCargo=true end
-   local secured=player:GetAttribute("TestSecured")
-   if type(secured)=="number" and secured>0 and seenCargo then tutorial.Text="ฝาก Cargo สำเร็จ • วงจรทดสอบจบแล้ว" elseif seenCargo then tutorial.Text="กลับจุดจอดหน้าอู่ เบรก แล้วกด E เพื่อฝาก" elseif seenRide then tutorial.Text="ขี่ไป Zone 01 แล้วกด E ใกล้จุดเก็บอะไหล่" else tutorial.Text="เข้าใกล้ Street Cub แล้วกด F เพื่อขึ้นรถ" end
+   local cargo=player:GetAttribute("Cargo");if type(cargo)=="number" and cargo>0 then seenCargo=true end
+   local secured=player:GetAttribute("InventoryTotal")
+   if type(secured)=="number" and secured>0 and seenCargo then tutorial.Text="ฝากเข้าคลังสำเร็จ! กลับเข้า Raid ขโมยต่อได้" elseif seenCargo then tutorial.Text="หนียาม! ขับกลับผ่านประตู Raid เพื่อฝากอัตโนมัติ" elseif seenRide then tutorial.Text="รอประตู Raid เปิด แล้วขับไปโซน กด E เก็บอะไหล่" else tutorial.Text="เข้าใกล้ Street Cub ของคุณ แล้วกด F เพื่อขึ้นรถ" end
   end
   task.wait(.3)
  end

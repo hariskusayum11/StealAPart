@@ -1,12 +1,13 @@
 --!strict
 -- Server bootstrap: world build, garages + personal Street Cubs (M2), Raid Gate/round (M4),
--- Session only; no persistent economy. (Parts/Inventory M5 and guards M6 are wired in later.)
+-- shared parts + Cargo + Inventory (M5), NPC guards (M6). Session only; no persistent economy.
 local Players = game:GetService("Players")
 local Layout = require(game.ReplicatedStorage.RaceAndRaid.HubLayout)
 local Course = require(script.Parent.CargoCourse)
 local Garage = require(script.Parent.GarageService)
 local Vehicles = require(script.Parent.VehicleService)
 local Raid = require(script.Parent.RaidService)
+local Parts = require(script.Parent.PartsService)
 
 -- Players without a garage (7th player) spawn at the Central Plaza; owners are moved to their plot.
 local spawnPoint = workspace:FindFirstChild("Spawn")
@@ -24,6 +25,7 @@ local function feedback(player: Player, message: string)
 end
 Vehicles.setFeedback(feedback)
 Raid.setFeedback(feedback)
+Parts.setFeedback(feedback)
 
 local function placeAtGarage(player: Player, character: Model)
  local plotId = Garage.plotOf(player.UserId)
@@ -51,6 +53,7 @@ Players.PlayerRemoving:Connect(function(player: Player)
  Garage.release(player.UserId)
 end)
 
+Parts.start()
 Raid.start()
 
 -- Studio-only QA hook (ServerStorage never replicates; not created in live servers): lets the
@@ -67,6 +70,11 @@ if game:GetService("RunService"):IsStudio() then
   if command == "despawn" then Vehicles.despawn(args[1]); return true end
   if command == "raidDurations" then Raid.qaSetDurations(args[1], args[2]); return true end
   if command == "raidAdvance" then Raid.qaAdvance(); return Raid.phase() end
+  if command == "parts" then
+   local out = {}
+   for id, rec in Parts.records() do out[id] = {state = rec.state, zone = rec.zoneId, type = rec.typeId, holder = rec.holder and rec.holder.UserId} end
+   return out
+  end
   if command == "placeBike" then -- (userId, Vector3 seat position, Vector3 look direction) at rest
    local bike = Vehicles.bikeOf(args[1]); if not bike then return false end
    Vehicles.placeAt(bike, CFrame.lookAt(args[2], args[2] + args[3])); return true

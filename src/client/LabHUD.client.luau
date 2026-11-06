@@ -9,6 +9,7 @@ local pg=player:WaitForChild("PlayerGui")
 local shared=game:GetService("ReplicatedStorage"):WaitForChild("RaceAndRaid")
 local Theme=require(shared.UITheme)
 local Layout=require(shared.HubLayout)
+local RaidConfig=require(shared.RaidConfig)
 local UI=require(script.Parent.UI.Components)
 local old=pg:FindFirstChild("RaceAndRaidLabHUD");if old then old:Destroy() end
 local gui=Instance.new("ScreenGui");gui.Name="RaceAndRaidLabHUD";gui.ResetOnSpawn=false;gui.DisplayOrder=10;gui.Parent=pg
@@ -19,6 +20,7 @@ brand.Size=UDim2.fromOffset(190,62)
 local logo=Instance.new("ImageLabel");logo.Name="Logo";logo.Image=Theme.IconAtlas;logo.ImageRectOffset=Vector2.zero;logo.ImageRectSize=Theme.LogoRect;logo.ScaleType=Enum.ScaleType.Fit;logo.Size=UDim2.new(1,-8,0,46);logo.Position=UDim2.fromOffset(4,0);logo.BackgroundTransparency=1;logo.Parent=brand
 UI.label(brand,"State","PROTOTYPE • SESSION",UDim2.new(1,0,0,18),UDim2.fromOffset(0,45),10,Theme.Muted)
 local resources=UI.panel(root,"Resources",UDim2.fromOffset(440,44),UDim2.new(.5,-220,0,10))
+resources.Visible=false -- RaidHUD round banner owns this slot (M4)
 local resourceText=UI.label(resources,"Values","",UDim2.new(1,-12,1,0),UDim2.fromOffset(6,0),16)
 local zone=UI.panel(root,"Zone",UDim2.fromOffset(300,46),UDim2.new(.5,-150,0,64),Theme.Gold)
 local zoneText=UI.label(zone,"Name","Garage City",UDim2.new(1,-8,1,0),UDim2.fromOffset(4,0),18)
@@ -62,7 +64,13 @@ local iconRects={{1220,715,250,210},{280,700,230,225},{975,700,260,225},{1480,71
 local navNames={"Garage / อู่","Shop / ร้านค้า","Upgrade / อัปเกรด","Parts Market / ตลาด","Race Hub / สนามแข่ง","Event Plaza / กิจกรรม"}
 for i,name in navNames do
  local button=UI.button(nav,"Nav"..i,name,function()
-  local detail=if i==1 then string.format("ผู้เล่น: %s\nฝากอะไหล่แล้ว: %d ครั้ง (Session)\n\nPrototype: ยังไม่มีการจองอู่ รายได้ Coins/min หรือการขยายอู่",player.DisplayName,player:GetAttribute("TestSecured") or 0)
+  local detail=if i==1 then (function()
+   local lines={string.format("ผู้เล่น: %s • อู่ %s",player.DisplayName,tostring(player:GetAttribute("PlotId") or "-")),string.format("คลังอะไหล่ (ฝากสำเร็จ): %d ชิ้น",player:GetAttribute("InventoryTotal") or 0)}
+   local ok,counts=pcall(function() return game:GetService("HttpService"):JSONDecode(player:GetAttribute("InventoryJson") or "{}") end)
+   if ok and type(counts)=="table" then for _,t in RaidConfig.PartTypes do local n=counts[t.id];if n and n>0 then table.insert(lines,string.format("  • %s × %d",t.name,n)) end end end
+   table.insert(lines,"\nCargo ที่ถืออยู่ยังไม่ปลอดภัย • ขับผ่านประตู Raid เพื่อฝากเข้าคลัง")
+   return table.concat(lines,"\n")
+  end)()
    else "UI Prototype Only\nสถานที่มีใน Blockout แต่ระบบนี้ยังไม่เปิดใช้งาน\nไม่มีการซื้อ ขาย อัปเกรด แจกเงิน หรือจัดอันดับจากเมนูนี้"
   open(name,detail)
  end)
@@ -83,7 +91,7 @@ settings=UI.button(root,"Scale","UI 100%",function()
  scale.Scale=nextScale;root.Size=UDim2.fromScale(1/nextScale,1/nextScale);settings.Text=string.format("UI %.0f%%",nextScale*100)
 end)
 settings.Size=UDim2.fromOffset(154,44);settings.Position=UDim2.new(1,-168,0,168)
-local waypoint=Instance.new("BillboardGui");waypoint.Name="CargoWaypoint";waypoint.Size=UDim2.fromOffset(160,36);waypoint.StudsOffsetWorldSpace=Vector3.new(0,5,0);waypoint.MaxDistance=220;waypoint.AlwaysOnTop=true;waypoint.Parent=gui
+local waypoint=Instance.new("BillboardGui");waypoint.Name="CargoWaypoint";waypoint.Size=UDim2.fromOffset(160,36);waypoint.StudsOffsetWorldSpace=Vector3.new(0,5,0);waypoint.MaxDistance=4000;waypoint.AlwaysOnTop=true;waypoint.Parent=gui
 local waypointText=UI.label(waypoint,"Destination","",UDim2.fromScale(1,1),UDim2.fromOffset(0,0),15,Theme.Gold)
 local function vendor(): ScreenGui?
  local v=pg:FindFirstChild("A-Chassis Interface");return if v and v:IsA("ScreenGui") then v else nil
@@ -115,12 +123,19 @@ RunService.Heartbeat:Connect(function(dt: number)
  local characterRoot=character and character:FindFirstChild("HumanoidRootPart")
  local pos=if characterRoot and characterRoot:IsA("BasePart") then characterRoot.Position else nil
  currentSpeed=if riding and seat then seat.AssemblyLinearVelocity.Magnitude else 0
- local carrying=player:GetAttribute("TestCargo") or 0
- local target=if carrying>0 then Layout.Deposit else Layout.Pickup
- local returnDistance=if pos then (pos-Layout.Deposit).Magnitude else 0
- local targetDistance=if pos then (pos-target).Magnitude else 0
- cargo.Text=string.format("CARGO %d / 1",carrying)
- returnLabel.Text=string.format("กลับอู่ %.0f studs • เส้นตรง",returnDistance)
+ local carrying=player:GetAttribute("Cargo") or 0
+ local gatePoint=Vector3.new(RaidConfig.GateX,0,0)
+ -- Target: the Raid Gate while carrying, otherwise the nearest available part (only while Open).
+ local targetPart:BasePart?=nil
+ if carrying==0 and pos and workspace:GetAttribute("RaidPhase")=="Open" then
+  local parts=workspace:FindFirstChild("RaidParts");local best=math.huge
+  if parts then for _,p in parts:GetChildren() do if p:IsA("BasePart") and (p:GetAttribute("State")=="available" or p:GetAttribute("State")=="dropped") then local d=(p.Position-pos).Magnitude;if d<best then best=d;targetPart=p end end end end
+ end
+ local returnDistance=if pos then (Vector3.new(pos.X,0,pos.Z)-gatePoint).Magnitude else 0
+ local targetDistance=if carrying>0 then returnDistance elseif targetPart and pos then (targetPart.Position-pos).Magnitude else math.huge
+ local cargoType=player:GetAttribute("CargoType");local ct=if typeof(cargoType)=="string" then RaidConfig.partType(cargoType) else nil
+ cargo.Text=if carrying>0 and ct then "CARGO 1 / 1 • "..ct.name else "CARGO 0 / 1"
+ returnLabel.Text=if carrying>0 then string.format("ประตู Raid %.0f studs • ขับผ่านเพื่อฝาก",returnDistance) else string.format("คลังอะไหล่ %d ชิ้น",player:GetAttribute("InventoryTotal") or 0)
  speed.Visible=riding;gear.Visible=riding;unit.Visible=riding;engine.Visible=riding
  if not riding then cargo.Position=UDim2.fromOffset(8,12);cargo.Size=UDim2.new(1,-16,0,28);returnLabel.Position=UDim2.fromOffset(8,45);returnLabel.Size=UDim2.new(1,-16,0,24)
  else cargo.Position=UDim2.fromOffset(if compact then 126 else 160,5);cargo.Size=UDim2.fromOffset(if compact then 180 else 280,28);returnLabel.Position=UDim2.fromOffset(if compact then 126 else 160,34);returnLabel.Size=UDim2.fromOffset(if compact then 180 else 280,24) end
@@ -132,7 +147,7 @@ RunService.Heartbeat:Connect(function(dt: number)
  end
  zoneText.Text=label
  local coins=player:GetAttribute("Coins");local power=player:GetAttribute("Power")
- local resourcesText=string.format("ฝากสำเร็จ %d ครั้ง • SESSION",player:GetAttribute("TestSecured") or 0)
+ local resourcesText=string.format("คลังอะไหล่ %d ชิ้น • SESSION",player:GetAttribute("InventoryTotal") or 0)
  if typeof(coins)=="number" then resourcesText=string.format("Coins %d  •  ",coins)..resourcesText end
  if typeof(power)=="number" then resourcesText..=string.format("  •  Power %d",power) end
  resourceText.Text=resourcesText
@@ -143,13 +158,14 @@ RunService.Heartbeat:Connect(function(dt: number)
  gear.Text=if number==0 then "N" elseif number<0 then "R" else tostring(number)
  speed.Text=string.format("%03d",math.floor(currentSpeed*1.008+.5))
  local on=v and v:FindFirstChild("IsOn");engine.Text=if on and on:IsA("BoolValue") and on.Value then "เครื่องยนต์ทำงาน / ENGINE ON" else "เครื่องยนต์ดับ / ENGINE OFF"
- local point=workspace:FindFirstChild(if carrying>0 then "TestGarageDeposit" else "TestScrapPickup")
+ local gate=workspace:FindFirstChild("RaidGate");local gateLine=gate and gate:FindFirstChild("GateLine")
+ local point:Instance?=if carrying>0 then gateLine else targetPart
  waypoint.Adornee=if point and point:IsA("BasePart") then point else nil;waypoint.Enabled=point~=nil
- waypointText.Text=if carrying>0 then "▼ ฝาก Cargo" else "▼ เก็บอะไหล่"
+ waypointText.Text=if carrying>0 then "▼ ประตู Raid • ฝากอัตโนมัติ" else "▼ อะไหล่"
  local entry=pg:FindFirstChild("StealEntry")
  local tutorial=entry and entry:FindFirstChild("Tutorial")
  hint.Visible=not (entry and entry:IsA("ScreenGui") and entry.Enabled and tutorial and tutorial:IsA("GuiObject") and tutorial.Visible)
- hint.Text=if riding and targetDistance<14 then (if carrying>0 then "เบรก แล้วกด E • ฝาก Cargo" else "กด E เก็บอะไหล่") elseif UserInputService.TouchEnabled then "ใช้ปุ่มควบคุมรถและปุ่ม Interact ที่ปรากฏ" elseif riding then "W/S เร่ง–เบรก • A/D เลี้ยว • จอดนิ่งแล้วกด Space ลงรถ" else "เข้าใกล้รถ กด F ขึ้นรถ • E เก็บอะไหล่"
+ hint.Text=if riding and targetDistance<14 then (if carrying>0 then "ขับผ่านประตู Raid • ฝากอัตโนมัติ" else "กด E เก็บอะไหล่") elseif UserInputService.TouchEnabled then "ใช้ปุ่มควบคุมรถและปุ่ม Interact ที่ปรากฏ" elseif riding then "W/S เร่ง–เบรก • A/D เลี้ยว • จอดนิ่งแล้วกด Space ลงรถ" else "เข้าใกล้รถ กด F ขึ้นรถ • E เก็บอะไหล่ • ฝากที่ประตู Raid"
  root.Visible=not menu.Visible
  if menu.Visible then nav.Visible=not compact end
  toast.Visible=os.clock()<toastUntil

@@ -2,7 +2,7 @@
 -- Owner-approved G1-only architecture study. Original collision shell and road remain authoritative.
 -- v5: identical geometry to v4, now expressed in G1 plot-local space via Layout.PlotFrame.
 local Layout=require(game.ReplicatedStorage.RaceAndRaid.HubLayout)
-local Visual={Version=6}
+local Visual={Version=7}
 local cream=Color3.fromRGB(232,224,201)
 local navy=Color3.fromRGB(27,46,64)
 local teal=Color3.fromRGB(26,124,131)
@@ -107,7 +107,7 @@ function Visual.apply(course:Model)
  end
  -- Forecourt parking paint and safe side planters, not curbs in the driving lane.
  for _,x in {-26,26} do part("ApronBayEdge",Vector3.new(.2,.02,25),Vector3.new(x,.07,-29),cream,Enum.Material.SmoothPlastic) end
- textPanel("DepositSign",Vector3.new(-29,5,-26),Vector3.new(10,4,.4),"ฝากอะไหล่\nE • CARGO",teal,cream)
+ textPanel("DepositSign",Vector3.new(-29,5,-26),Vector3.new(10,4,.4),"คลังอะไหล่\nฝากที่ประตู RAID",teal,cream)
  local function planter(x:number,z:number)
   part("Planter",Vector3.new(4,2.2,6),Vector3.new(x,1.1,z),coral,Enum.Material.Concrete)
   part("PlanterSoil",Vector3.new(3.6,.15,5.6),Vector3.new(x,2.22,z),Color3.fromRGB(84,66,44),Enum.Material.Ground)
