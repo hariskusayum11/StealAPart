@@ -1,7 +1,7 @@
 -- QA-only (Studio Play Client). Mount via RidePrompt and hold throttle (keyboard W path via VirtualInput)
 -- so a screenshot can be taken while moving. __SHIFT__ = "1" fires ShiftUp (pre-C2 builds start in N).
 local player=game.Players.LocalPlayer
-local bike=workspace:WaitForChild("ChassisTestBike")
+local bike=workspace:WaitForChild("Vehicles"):WaitForChild("StreetCub_"..game.Players:GetPlayers()[1].UserId)
 local seat=bike:WaitForChild("DriveSeat")
 local hum=player.Character:WaitForChild("Humanoid")
 local root=player.Character:WaitForChild("HumanoidRootPart")

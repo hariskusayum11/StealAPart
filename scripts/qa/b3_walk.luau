@@ -15,7 +15,7 @@ local legs={
 for _,fac in L.Facilities do table.insert(legs,{name="->"..fac.name,p=fac.position}) end
 table.insert(legs,{name="->Landmark",p=city.Landmark})
 table.insert(legs,{name="->Central Plaza",p=city.CentralPlaza})
-local rp=RaycastParams.new();rp.FilterType=Enum.RaycastFilterType.Exclude;rp.FilterDescendantsInstances={ch,workspace.ChassisTestBike}
+local rp=RaycastParams.new();rp.FilterType=Enum.RaycastFilterType.Exclude;rp.FilterDescendantsInstances={ch,(workspace:WaitForChild("Vehicles"):WaitForChild("StreetCub_"..game.Players:GetPlayers()[1].UserId))}
 player:SetAttribute("B3Walk",nil)
 task.spawn(function()
  local out={}

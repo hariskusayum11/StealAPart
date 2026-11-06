@@ -8,7 +8,7 @@ local L=require(game.ReplicatedStorage.RaceAndRaid.HubLayout)
 local ep=L.RoutePoint(3050);local c=ep+Vector3.new(140,0,65)
 local ray=workspace:Raycast(c+Vector3.new(0,60,0),Vector3.new(0,-120,0))
 assert(ray,"no ground")
-local bike=workspace.ChassisTestBike :: Model
+local bike=(workspace:WaitForChild("Vehicles"):WaitForChild("StreetCub_"..game.Players:GetPlayers()[1].UserId)) :: Model
 local seat=bike:WaitForChild("DriveSeat") :: VehicleSeat
 local target=CFrame.new(c.X,ray.Position.Y+2.85,c.Z)
 bike:PivotTo(target*seat.CFrame:Inverse()*bike:GetPivot())

@@ -35,7 +35,7 @@ end
 local out={total=total,groups={}}
 for name,list in groups do table.sort(list);out.groups[name]={n=#list,h=fnv(table.concat(list,"\n"))} end
 local L=require(game.ReplicatedStorage.RaceAndRaid.HubLayout)
-local bike=workspace:FindFirstChild("ChassisTestBike")
+local bike=(workspace:FindFirstChild("Vehicles") and workspace.Vehicles:FindFirstChild("StreetCub_"..game.Players:GetPlayers()[1].UserId))
 local seat=bike and bike:FindFirstChild("DriveSeat")
 local dep=workspace:FindFirstChild("TestGarageDeposit")
 out.fixtures={spawn=tostring(workspace.Spawn.CFrame.Position),deposit=dep and tostring(dep.Position),layoutDeposit=tostring(L.Deposit),

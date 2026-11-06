@@ -1,7 +1,7 @@
 -- QA-only (Studio Play Client). Vehicle visibility probe: mount via RidePrompt, drive straight ~5 s with
 -- VirtualInput, then report where the visible body meshes are relative to the DriveSeat. Never shipped.
 local player=game.Players.LocalPlayer
-local bike=workspace:WaitForChild("ChassisTestBike")
+local bike=workspace:WaitForChild("Vehicles"):WaitForChild("StreetCub_"..game.Players:GetPlayers()[1].UserId)
 local seat=bike:WaitForChild("DriveSeat")
 local hum=player.Character:WaitForChild("Humanoid")
 local function snapshot(label)

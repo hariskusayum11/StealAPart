@@ -4,7 +4,7 @@
 -- displacement and on-foot movement. Result JSON -> player attribute C2Keys after __SECS__ s.
 local UIS=game:GetService("UserInputService")
 local player=game.Players.LocalPlayer
-local seat=workspace:WaitForChild("ChassisTestBike"):WaitForChild("DriveSeat")
+local seat=workspace:WaitForChild("Vehicles"):WaitForChild("StreetCub_"..game.Players:GetPlayers()[1].UserId):WaitForChild("DriveSeat")
 local char=player.Character;local hum=char:WaitForChild("Humanoid");local root=char:WaitForChild("HumanoidRootPart")
 player:SetAttribute("C2Keys",nil)
 local t0=os.clock()

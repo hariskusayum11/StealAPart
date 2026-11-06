@@ -110,8 +110,8 @@ RunService.Heartbeat:Connect(function(dt: number)
  elapsed+=dt;if elapsed<.1 then return end;elapsed=0
  gui.Enabled=player:GetAttribute("EntryOpen")~=true
  local character=player.Character;local humanoid=character and character:FindFirstChildOfClass("Humanoid")
- local seat=humanoid and humanoid.SeatPart;local bike=workspace:FindFirstChild("ChassisTestBike")
- riding=seat~=nil and bike~=nil and seat:IsDescendantOf(bike)
+ local seat=humanoid and humanoid.SeatPart
+ riding=seat~=nil and seat.Parent~=nil and seat.Parent:GetAttribute("StreetCub")==true
  local characterRoot=character and character:FindFirstChild("HumanoidRootPart")
  local pos=if characterRoot and characterRoot:IsA("BasePart") then characterRoot.Position else nil
  currentSpeed=if riding and seat then seat.AssemblyLinearVelocity.Magnitude else 0

@@ -137,7 +137,7 @@ out.obstacles=obstacles
 -- 4) fixture smoke
 local dep=workspace:FindFirstChild("TestGarageDeposit") :: BasePart?
 local pick=workspace:FindFirstChild("TestScrapPickup") :: BasePart?
-local bike=workspace:FindFirstChild("ChassisTestBike") :: Model?
+local bike=(workspace:FindFirstChild("Vehicles") and workspace.Vehicles:FindFirstChild("StreetCub_"..game.Players:GetPlayers()[1].UserId)) :: Model?
 local seat=bike and bike:FindFirstChild("DriveSeat") :: VehicleSeat?
 local plr=game.Players:GetPlayers()[1]
 local root=plr and plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") :: BasePart?

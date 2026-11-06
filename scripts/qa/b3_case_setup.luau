@@ -3,7 +3,7 @@
 -- __PLOT__ = G1..G6. No placement happens while driving. Never shipped.
 local L=require(game.ReplicatedStorage.RaceAndRaid.HubLayout)
 local plot=L.FindPlot("__PLOT__")
-local bike=workspace.ChassisTestBike :: Model
+local bike=(workspace:WaitForChild("Vehicles"):WaitForChild("StreetCub_"..game.Players:GetPlayers()[1].UserId)) :: Model
 local seat=bike:WaitForChild("DriveSeat") :: VehicleSeat
 local p=game.Players:GetPlayers()[1]
 local ch=p.Character :: Model

@@ -1,7 +1,7 @@
 -- PLAY-ONLY (B3) Street Cub steady-state turning circle at 28/35 stud/s via A-Chassis virtual input.
 -- No velocity/CFrame writes. Circle fitted (Kasa least squares) to seat positions after settling.
 local player=game.Players.LocalPlayer
-local bike=workspace:WaitForChild("ChassisTestBike")
+local bike=workspace:WaitForChild("Vehicles"):WaitForChild("StreetCub_"..game.Players:GetPlayers()[1].UserId)
 local seat=bike:WaitForChild("DriveSeat") :: VehicleSeat
 local ui=player.PlayerGui:WaitForChild("A-Chassis Interface",10)
 assert(ui,"not mounted")

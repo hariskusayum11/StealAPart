@@ -2,7 +2,7 @@
 -- and does D creep with no input? Reports DISPLACEMENT along the stop heading (not just velocity spikes).
 -- __VARIANT__: none | noik (disable rider IKControls, test only) | nocollide (rider parts CanCollide off, test only).
 local player=game.Players.LocalPlayer
-local seat=workspace:WaitForChild("ChassisTestBike"):WaitForChild("DriveSeat")
+local seat=workspace:WaitForChild("Vehicles"):WaitForChild("StreetCub_"..game.Players:GetPlayers()[1].UserId):WaitForChild("DriveSeat")
 local hum=player.Character:WaitForChild("Humanoid")
 local prompt=seat:FindFirstChild("RidePrompt");prompt:InputHoldBegin();task.wait(.15);prompt:InputHoldEnd()
 local t=os.clock();while hum.SeatPart~=seat and os.clock()-t<5 do task.wait(.05) end
@@ -15,7 +15,7 @@ if "__VARIANT__"=="noik" then for _,d in hum:GetChildren() do if d:IsA("IKContro
 if "__VARIANT__"=="nocollide" then
  game:GetService("RunService").Stepped:Connect(function() for _,d in player.Character:GetDescendants() do if d:IsA("BasePart") then d.CanCollide=false end end end)
 end
-local F=workspace.ChassisTestBike.Wheels.F
+local F=(workspace:WaitForChild("Vehicles"):WaitForChild("StreetCub_"..game.Players:GetPlayers()[1].UserId)).Wheels.F
 local touching={}
 local function track(label,sec)
  local p0=seat.Position;local h=seat.CFrame.LookVector;h=Vector3.new(h.X,0,h.Z).Unit
@@ -46,6 +46,6 @@ key(Enum.KeyCode.S,Enum.UserInputState.End)
 track("afterBrakeRelease",4)
 out.gear=V.Gear.Value
 -- Which rider parts touch non-bike geometry right now (stopped)?
-for _,d in player.Character:GetDescendants() do if d:IsA("BasePart") then for _,o in workspace:GetPartsInPart(d) do if not o:IsDescendantOf(player.Character) then touching[d.Name.."->"..(o:IsDescendantOf(workspace.ChassisTestBike) and "bike:" or "world:")..o.Name]=true end end end end
+for _,d in player.Character:GetDescendants() do if d:IsA("BasePart") then for _,o in workspace:GetPartsInPart(d) do if not o:IsDescendantOf(player.Character) then touching[d.Name.."->"..(o:IsDescendantOf((workspace:WaitForChild("Vehicles"):WaitForChild("StreetCub_"..game.Players:GetPlayers()[1].UserId))) and "bike:" or "world:")..o.Name]=true end end end end
 local list={};for k in touching do table.insert(list,k) end;out.riderOverlaps=list
 return game:GetService("HttpService"):JSONEncode(out)

@@ -1,7 +1,7 @@
 -- QA-only (Studio Play Client). Runs beside a B3 route drive and records ride-height / lean / suspension
 -- extremes and anomaly events until the route result attribute appears. Read-only. Result: RideMonitor.
 local player=game.Players.LocalPlayer
-local bike=workspace:WaitForChild("ChassisTestBike")
+local bike=workspace:WaitForChild("Vehicles"):WaitForChild("StreetCub_"..game.Players:GetPlayers()[1].UserId)
 local seat=bike:WaitForChild("DriveSeat")
 local hum=player.Character:WaitForChild("Humanoid")
 local spring={F=bike.Wheels.F:FindFirstChild("Spring",true),R=bike.Wheels.R:FindFirstChild("Spring",true)}

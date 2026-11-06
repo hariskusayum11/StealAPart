@@ -1,7 +1,7 @@
 -- QA-only (Studio Play Client). Background drive for video capture: hold ~__SPEED__ stud/s, optional
 -- steer key __STEER__ (A/D or none), for __SECS__ s, then brake. A-Chassis VirtualInput keyboard codes only.
 local player=game.Players.LocalPlayer
-local seat=workspace:WaitForChild("ChassisTestBike"):WaitForChild("DriveSeat")
+local seat=workspace:WaitForChild("Vehicles"):WaitForChild("StreetCub_"..game.Players:GetPlayers()[1].UserId):WaitForChild("DriveSeat")
 local hum=player.Character:WaitForChild("Humanoid")
 if hum.SeatPart~=seat then
  local prompt=seat:FindFirstChild("RidePrompt");prompt:InputHoldBegin();task.wait(.15);prompt:InputHoldEnd()

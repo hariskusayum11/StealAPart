@@ -136,7 +136,7 @@ elseif CASE=="SPEEDLANE" or CASE=="GRASS" then
   garageReturn(G1,1,false)
  end
 else error("unknown case "..CASE) end
-local rp=RaycastParams.new();rp.FilterType=Enum.RaycastFilterType.Exclude;rp.FilterDescendantsInstances={workspace:FindFirstChild("ChassisTestBike")}
+local rp=RaycastParams.new();rp.FilterType=Enum.RaycastFilterType.Exclude;rp.FilterDescendantsInstances={(workspace:FindFirstChild("Vehicles") and workspace.Vehicles:FindFirstChild("StreetCub_"..game.Players:GetPlayers()[1].UserId))}
 local grass={};local runs={};local cur=nil
 for i,n in path do
  local hit=workspace:Raycast(n.p+Vector3.new(0,300,0),Vector3.new(0,-600,0),rp)

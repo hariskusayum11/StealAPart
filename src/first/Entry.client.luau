@@ -43,8 +43,8 @@ local function readyState():(number,string)
  local character=player.Character;local h=character and character:FindFirstChildOfClass("Humanoid")
  if character and h and h.Health>0 and character:FindFirstChild("HumanoidRootPart") then n+=1 else table.insert(missing,"Spawn ที่อู่") end
  if workspace:GetAttribute("WorldGeometryReady") and workspace:FindFirstChild("CargoTestCourse") then n+=1 else table.insert(missing,"สร้างพื้นและถนน") end
- local b=workspace:FindFirstChild("ChassisTestBike");local s=b and b:FindFirstChild("DriveSeat")
- if s and s:IsA("VehicleSeat") and not s.Disabled and workspace:FindFirstChild("TestScrapPickup") and workspace:FindFirstChild("TestGarageDeposit") then n+=1 else table.insert(missing,"รถและ Cargo ทดสอบ") end
+ local vehicles=workspace:FindFirstChild("Vehicles");local b=vehicles and vehicles:FindFirstChild("StreetCub_"..player.UserId);local s=b and b:FindFirstChild("DriveSeat")
+ if ((s and s:IsA("VehicleSeat") and not s.Disabled) or player:GetAttribute("PlotId")=="") and workspace:FindFirstChild("TestScrapPickup") and workspace:FindFirstChild("TestGarageDeposit") then n+=1 else table.insert(missing,"รถและ Cargo ทดสอบ") end
  return n,table.concat(missing," · ")
 end
 local function load()

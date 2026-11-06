@@ -3,7 +3,7 @@
 -- rider offset (alignment). Drives with A-Chassis VirtualInput keyboard codes; no CFrame/velocity writes.
 -- __SHIFT__="1" fires ShiftUp when the build starts in N (pre-C2 builds).
 local player=game.Players.LocalPlayer
-local bike=workspace:WaitForChild("ChassisTestBike")
+local bike=workspace:WaitForChild("Vehicles"):WaitForChild("StreetCub_"..game.Players:GetPlayers()[1].UserId)
 local seat=bike:WaitForChild("DriveSeat")
 local hum=player.Character:WaitForChild("Humanoid")
 local root=player.Character:WaitForChild("HumanoidRootPart")

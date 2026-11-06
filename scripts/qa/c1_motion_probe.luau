@@ -3,7 +3,7 @@
 -- Reports, per mesh group, drift from its weld target (must stay ~0), fork steer angle and wheel spin
 -- (must change), maximum mesh-to-seat distance and minimum UpVector.Y.
 local player=game.Players.LocalPlayer
-local bike=workspace:WaitForChild("ChassisTestBike")
+local bike=workspace:WaitForChild("Vehicles"):WaitForChild("StreetCub_"..game.Players:GetPlayers()[1].UserId)
 local seat=bike:WaitForChild("DriveSeat")
 local hum=player.Character:WaitForChild("Humanoid")
 local F=bike.Wheels.F;local R=bike.Wheels.R

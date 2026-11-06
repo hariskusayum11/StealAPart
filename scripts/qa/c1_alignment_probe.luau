@@ -1,7 +1,7 @@
 -- QA-only (Studio Play Server, bike parked, no rider). Read-only: is the body-fit aligned with the
 -- chassis it is welded to? In the source model every mesh shares one rotation and the wheel axles are
 -- perpendicular to the wheelbase, so a correct fit gives ~0 deg for every angle below.
-local bike=workspace:WaitForChild("ChassisTestBike")
+local bike=workspace:WaitForChild("Vehicles"):WaitForChild("StreetCub_"..game.Players:GetPlayers()[1].UserId)
 local seat=bike:WaitForChild("DriveSeat")
 local F,R=bike.Wheels.F,bike.Wheels.R
 local function deg(a,b) return math.deg(math.acos(math.clamp(math.abs(a.Unit:Dot(b.Unit)),0,1))) end

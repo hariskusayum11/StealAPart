@@ -9,8 +9,7 @@ local function bind(character: Model)
  local restore: (() -> ())? = nil
  local function update()
   local seat=humanoid.SeatPart
-  local bike=workspace:FindFirstChild("ChassisTestBike")
-  local riding=seat~=nil and bike~=nil and seat:IsDescendantOf(bike)
+  local riding=seat~=nil and seat.Parent~=nil and seat.Parent:GetAttribute("StreetCub")==true
   if riding and not restore then
    local minimum,maximum=player.CameraMinZoomDistance,player.CameraMaxZoomDistance
    local offset=humanoid.CameraOffset

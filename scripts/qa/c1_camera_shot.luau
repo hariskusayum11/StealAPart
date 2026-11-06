@@ -1,6 +1,6 @@
 -- QA-only (Studio Play Client). Park the camera beside the moving DriveSeat (chase-side view) for a capture.
 local cam=workspace.CurrentCamera
-local seat=workspace.ChassisTestBike.DriveSeat
+local seat=(workspace:WaitForChild("Vehicles"):WaitForChild("StreetCub_"..game.Players:GetPlayers()[1].UserId)).DriveSeat
 cam.CameraType=Enum.CameraType.Scriptable
 local rs=game:GetService("RunService")
 if _G.C1Cam then _G.C1Cam:Disconnect() end

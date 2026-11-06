@@ -1,8 +1,8 @@
 -- QA-only (Studio Play Server). Read-only A-Chassis assembly/weld/constraint inventory for C1.
-local bike=workspace:WaitForChild("ChassisTestBike")
+local bike=workspace:WaitForChild("Vehicles"):WaitForChild("StreetCub_"..game.Players:GetPlayers()[1].UserId)
 local seat=bike:WaitForChild("DriveSeat")
 local out={seatDisabled=seat.Disabled,bodyFitVersion=bike:GetAttribute("BodyFitVersion"),wheels={},groups={},roots={},joints={},constraints={}}
-local function rel(p) return p and p:GetFullName():gsub("^Workspace%.ChassisTestBike%.","") or "nil" end
+local function rel(p) return p and p:GetFullName():gsub("^Workspace%.Vehicles%.StreetCub_%d+%.","") or "nil" end
 for _,w in {"F","R"} do
  local wheel=bike.Wheels:FindFirstChild(w)
  local kids={}

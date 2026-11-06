@@ -88,13 +88,13 @@
           "Transparency": 1,
           "CanCollide": false
         }
-      },
-      "ChassisTestBike": {
-        "$path": "assets/vendor/AChassisMotorcycle.rbxmx"
       }
     },
     "ServerStorage": {
       "$ignoreUnknownInstances": true,
+      "StreetCubTemplate": {
+        "$path": "assets/vendor/AChassisMotorcycle.rbxmx"
+      },
       "UnderboneBody": {
         "$path": "assets/body-review/UnderboneBody.model.json"
       }
