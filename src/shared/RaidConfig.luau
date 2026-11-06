@@ -28,15 +28,17 @@ RaidConfig.PartTypes = {
  {id = "shock", name = "โช้คหลัง", color = Color3.fromRGB(44, 132, 196)},
 }
 
--- Difficulty by zone group; harder zones have more, faster guards with a longer reach.
+-- Difficulty by zone group; harder zones have more, faster, quicker-reacting guards with a longer reach.
+-- Street Cub: cruise 45, top ~64 stud/s, pad U-turns ~7-12. A guard on the pad cuts inside a U-turn arc,
+-- so easy guards are slower than any moving bike and only catch a thief who stops or walks;
+-- medium ones catch slow U-turns; hard ones catch anyone who does not grab-and-go (M7 tuning).
 RaidConfig.Tiers = {
- {name = "ง่าย", zones = {1, 2, 3, 4}, guards = 1, speed = 26, catchRadius = 7, color = Color3.fromRGB(70, 170, 90)},
- {name = "ปานกลาง", zones = {5, 6, 7, 8}, guards = 2, speed = 36, catchRadius = 8, color = Color3.fromRGB(230, 150, 40)},
- {name = "ยาก", zones = {9, 10, 11, 12}, guards = 2, speed = 46, catchRadius = 9, color = Color3.fromRGB(210, 50, 50)},
+ {name = "ง่าย", zones = {1, 2, 3, 4}, guards = 1, speed = 6, alert = 3.0, catchRadius = 5, color = Color3.fromRGB(70, 170, 90)},
+ {name = "ปานกลาง", zones = {5, 6, 7, 8}, guards = 2, speed = 16, alert = 2.2, catchRadius = 7, color = Color3.fromRGB(230, 150, 40)},
+ {name = "ยาก", zones = {9, 10, 11, 12}, guards = 2, speed = 28, alert = 1.5, catchRadius = 8, color = Color3.fromRGB(210, 50, 50)},
 }
 
--- Guards spot the thief first ("!"), then chase: a fair head start for children on a standing start.
-RaidConfig.GuardAlertSeconds = 1.2
+-- Guards spot the thief first ("!", tier.alert seconds), then chase: a head start for children.
 
 function RaidConfig.tierOf(zoneId: number)
  for _, tier in RaidConfig.Tiers do

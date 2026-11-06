@@ -23,9 +23,13 @@ local function nearestPart(zoneId,state)
  return best
 end
 if STEP=="open" then
- hook:Invoke("raidDurations",8,90) -- closed 8 s, open 90 s during QA
+ hook:Invoke("raidDurations",8,tonumber("__SECS__") or 90) -- closed 8 s, open 90 s (or __SECS__) during QA
  if workspace:GetAttribute("RaidPhase")~="Open" then hook:Invoke("raidAdvance") end
  task.wait(.5)
+elseif STEP=="closeShort" then -- E2E: start a 25 s Closed phase, then a full 300 s Open round
+ hook:Invoke("raidDurations",25,300)
+ if workspace:GetAttribute("RaidPhase")=="Open" then hook:Invoke("raidAdvance") else hook:Invoke("raidAdvance");hook:Invoke("raidAdvance") end
+ task.wait(.3)
 elseif STEP=="toPart" then -- park beside a Zone 01 part, seated, facing the road (west of the pad centre)
  ensureSeated()
  local part=nearestPart(1,"available") or workspace.RaidParts:FindFirstChildWhichIsA("BasePart")

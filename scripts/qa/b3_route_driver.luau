@@ -141,6 +141,27 @@ elseif CASE=="ZONES" then
   goto(Vector3.new(pos.X,0,road.Z+s*20));curV=7;arcTo(Vector3.new(1,0,0),28)
   curV=10;local nx=pos.X+20;goto(Vector3.new(nx,0,L.RoutePoint(nx).Z-8));x=math.ceil(nx/4)*4
  end
+elseif CASE=="RAID" then
+ -- M7 end-to-end: G1 -> wait at the Raid Gate until Open -> for each zone in __ZONES__: drive in, steal
+ -- (server pickup path), U-turn on the pad, escape west and cross the gate (auto deposit), loop back east.
+ limit=900
+ garageExit(G1,1);toThroatOut(-1);curV=8;goto(Vector3.new(-346,0,-8));emit(pos,"gateWait")
+ for zs in string.gmatch("__ZONES__","%d+") do
+  local z=L.Zones[tonumber(zs)];local zx,s,near=z.position.X,z.side,z.padNear;local road=L.RoutePoint(zx)
+  curV=14;goto(Vector3.new(-262,0,-8))
+  curV=HWV;follow(highway(-250,math.max(-246,zx-70)),8)
+  -- stop beside part slot 2 (x = zx-18, depth 0.72) inside the 12-stud prompt range, U-turn at 11 stud/s
+  curV=10;goto(Vector3.new(zx-50,0,road.Z+s*10))
+  curV=11;arcTo(Vector3.new(0,0,s),26)
+  goto(Vector3.new(zx-24,0,road.Z+s*(near+44)));emit(pos,"steal")
+  arcTo(Vector3.new(1,0,0),24);arcTo(Vector3.new(0,0,-s),24)
+  curV=10;goto(Vector3.new(pos.X,0,road.Z+s*20));curV=9;arcTo(Vector3.new(-1,0,0),28)
+  local back=math.floor((pos.X-12)/4)*4
+  if back>-250 then curV=HWV;follow(reversed(highway(-250,back)),8) end
+  curV=14;goto(Vector3.new(-300,0,8));goto(Vector3.new(-352,0,8));emit(pos,"gateIn")
+  curV=8;goto(Vector3.new(-378,0,8));arcTo(Vector3.new(0,0,-1),24);arcTo(Vector3.new(1,0,0),24) -- U-turn in the gateway plaza
+  curV=10;goto(Vector3.new(-346,0,-8))
+ end
 elseif CASE=="SPEEDLANE" or CASE=="GRASS" then
  garageExit(G1,-1);curV=14;goto(Vector3.new(cornerX,0,laneZ(-1,-1)));follow(reversed(cornerBottomToSide(-1)),8)
  if CASE=="GRASS" then
@@ -170,6 +191,7 @@ local function steer(v:number) local dz=.15;control("ContlrSteer",Vector3.new(if
 local function throttle(v:number) control("ContlrThrottle",Vector3.new(0,0,v)) end
 local function brake(v:number) control("ContlrBrake",Vector3.new(0,0,v)) end
 local zt:{[string]:number}={}
+local t0w:number?=nil
 local resultKey="B3Result_"..CASE
 player:SetAttribute(resultKey,nil)
 task.spawn(function()
@@ -210,6 +232,23 @@ task.spawn(function()
     if tag and not done[j] and (path[j].p-p).Magnitude<4.5 then
      done[j]=true
      local ev:{[string]:any}={tag=tag,t=math.floor(os.clock()-t0),pos={math.floor(p.X),math.floor(p.Z)}}
+     if tag=="gateWait" then
+      throttle(0);brake(1);local tw=os.clock()
+      while workspace:GetAttribute("RaidPhase")~="Open" and os.clock()-tw<150 do task.wait(.2) end
+      ev.waited=math.floor((os.clock()-tw)*10)/10;ev.phase=workspace:GetAttribute("RaidPhase");brake(0);lastProg=os.clock();t0w=(t0w or 0)+ev.waited
+     elseif tag=="steal" then
+      throttle(0);brake(1);local ts=os.clock();while seat.AssemblyLinearVelocity.Magnitude>1.5 and os.clock()-ts<5 do task.wait(.05) end
+      local best,bd=nil,math.huge
+      for _,rp_ in workspace.RaidParts:GetChildren() do
+       if rp_:GetAttribute("State")=="available" or rp_:GetAttribute("State")=="dropped" then local d=(rp_.Position-seat.Position).Magnitude;if d<bd then best,bd=rp_,d end end
+      end
+      ev.partDist=math.floor(bd*10)/10
+      if best and bd<16 then local pr=best:FindFirstChild("PickupPrompt");pr:InputHoldBegin();task.wait(.2);pr:InputHoldEnd();task.wait(.6) end
+      ev.cargo=player:GetAttribute("Cargo");ev.cargoType=player:GetAttribute("CargoType");ev.pickup=player:GetAttribute("LastPickupResult")
+      brake(0);lastProg=os.clock()
+     elseif tag=="gateIn" then
+      ev.cargo=player:GetAttribute("Cargo");ev.inventory=player:GetAttribute("InventoryTotal");ev.inventoryJson=player:GetAttribute("InventoryJson");ev.msg=player:GetAttribute("CargoMessage")
+     end
      if tag=="pickup" or tag=="deposit" then
       throttle(0);brake(1);local ts=os.clock();while seat.AssemblyLinearVelocity.Magnitude>1.5 and os.clock()-ts<5 do task.wait(.05) end
       ev.stopSpeed=seat.AssemblyLinearVelocity.Magnitude
@@ -250,7 +289,7 @@ task.spawn(function()
    for _,z in L.Zones do local k=string.format("Z%02d",z.id);if not zt[k] and p.X>=z.position.X then zt[k]=math.floor((os.clock()-t0)*10)/10 end end
    if not zt.gateOut and p.X>=-330 then zt.gateOut=math.floor((os.clock()-t0)*10)/10 end
    if zt.gateOut and not zt.gateIn and p.X<-330 then zt.gateIn=math.floor((os.clock()-t0)*10)/10 end
-   if os.clock()>nextS then nextS=os.clock()+4;table.insert(samples,{t=math.floor(os.clock()-t0),x=math.floor(p.X),z=math.floor(p.Z),v=math.floor(speed*10)/10,i=idx}) end
+   if os.clock()>nextS then nextS=os.clock()+4;local ch=player:GetAttribute("ChasedBy");table.insert(samples,{t=math.floor(os.clock()-t0),x=math.floor(p.X),z=math.floor(p.Z),v=math.floor(speed*10)/10,i=idx,c=player:GetAttribute("Cargo"),ch=ch}) end
    task.wait(.05)
   end
   dayConn:Disconnect()

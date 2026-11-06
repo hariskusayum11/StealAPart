@@ -57,9 +57,7 @@ local function load()
     loading=false;art.Visible=false;track.Visible=false;shade.BackgroundTransparency=1;shade.Active=false
     card.Name="WelcomePopup";resize();close.Visible=true
     status.Text="ยินดีต้อนรับสู่ STEAL A PART!"
-    description.Text="F ขึ้นรถของคุณ → รอประตู Raid เปิด → ขับไป Zone 01–12
-กด E ขโมยอะไหล่ → หนียาม → ขับผ่านประตู Raid = ฝากอัตโนมัติ
-Raid เปิด 5 นาที • ปิด 2 นาที"
+    description.Text="F ขึ้นรถของคุณ → รอประตู Raid เปิด → ขับไป Zone 01–12\nกด E ขโมยอะไหล่ → หนียาม → ขับผ่านประตู Raid = ฝากอัตโนมัติ\nRaid เปิด 5 นาที • ปิด 2 นาที"
     player:SetAttribute("LoadingComplete",true)
     if player:GetAttribute("WelcomeSeen") then dismiss() end
     return

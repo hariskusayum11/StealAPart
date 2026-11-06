@@ -105,7 +105,7 @@ end
 local function startChase(player: Player, zoneId: number)
  for _, g in byZone[zoneId] or {} do
   if g.state ~= "chase" and g.state ~= "alert" and not g.carrying then
-   g.alertUntil = os.clock() + Config.GuardAlertSeconds
+   g.alertUntil = os.clock() + g.tier.alert
    setState(g, "alert", player)
   end
  end
