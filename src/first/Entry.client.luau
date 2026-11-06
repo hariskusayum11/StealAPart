@@ -17,7 +17,7 @@ local function label(name:string,text:string,y:number,h:number):TextLabel
  local limit=Instance.new("UITextSizeConstraint");limit.MinTextSize=11;limit.MaxTextSize=20;limit.Parent=l;return l
 end
 local status=label("Status","กำลังเตรียม Garage City…",.28,.12)
-local description=label("Description","เคล็ดลับ: เบรกให้ช้าก่อนกด F ค้างเพื่อเก็บหรือฝาก Cargo",.5,.22)
+local description=label("Description","เคล็ดลับ: F ขึ้นรถ • E เก็บอะไหล่ • จอดนิ่งแล้ว Space ลงรถ",.5,.22)
 label("SessionNotice","สนามทดสอบ • ยังไม่บันทึกข้อมูล • Shared Loot ยังไม่เปิด",.77,.08)
 local track=Instance.new("Frame");track.Position=UDim2.fromScale(.08,.43);track.Size=UDim2.fromScale(.84,.025);track.BackgroundColor3=Color3.fromRGB(40,54,78);track.Parent=card
 local fill=Instance.new("Frame");fill.Name="ReadinessProgress";fill.Size=UDim2.fromScale(0,1);fill.BorderSizePixel=0;fill.BackgroundColor3=Color3.fromRGB(245,184,46);fill.Parent=track
@@ -57,7 +57,7 @@ local function load()
     loading=false;art.Visible=false;track.Visible=false;shade.BackgroundTransparency=1;shade.Active=false
     card.Name="WelcomePopup";resize();close.Visible=true
     status.Text="ยินดีต้อนรับสู่ STEAL A PART!"
-    description.Text="E ขึ้น Street Cub → ขี่ไป Zone 01 → F ค้างเก็บอะไหล่\nกลับอู่แล้วกด F ค้างเพื่อฝาก Cargo\nStreet Hatch ยังไม่พร้อมใช้งาน"
+    description.Text="F ขึ้น Street Cub → ขี่ไป Zone 01 → E เก็บอะไหล่\nกลับอู่แล้วกด E เพื่อฝาก Cargo\nStreet Hatch ยังไม่พร้อมใช้งาน"
     player:SetAttribute("LoadingComplete",true)
     if player:GetAttribute("WelcomeSeen") then dismiss() end
     return
@@ -79,7 +79,7 @@ task.spawn(function()
    if h and h.SeatPart then seenRide=true end
    local cargo=player:GetAttribute("TestCargo");if type(cargo)=="number" and cargo>0 then seenCargo=true end
    local secured=player:GetAttribute("TestSecured")
-   if type(secured)=="number" and secured>0 and seenCargo then tutorial.Text="ฝาก Cargo สำเร็จ • วงจรทดสอบจบแล้ว" elseif seenCargo then tutorial.Text="กลับจุดจอดหน้าอู่ เบรก แล้วกด F ค้างเพื่อฝาก" elseif seenRide then tutorial.Text="ขี่ไป Zone 01 แล้วกด F ค้างใกล้จุดเก็บ Cargo ทดสอบ" else tutorial.Text="เข้าใกล้ Street Cub แล้วกด E เพื่อขึ้นรถ" end
+   if type(secured)=="number" and secured>0 and seenCargo then tutorial.Text="ฝาก Cargo สำเร็จ • วงจรทดสอบจบแล้ว" elseif seenCargo then tutorial.Text="กลับจุดจอดหน้าอู่ เบรก แล้วกด E เพื่อฝาก" elseif seenRide then tutorial.Text="ขี่ไป Zone 01 แล้วกด E ใกล้จุดเก็บอะไหล่" else tutorial.Text="เข้าใกล้ Street Cub แล้วกด F เพื่อขึ้นรถ" end
   end
   task.wait(.3)
  end

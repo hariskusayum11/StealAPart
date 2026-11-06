@@ -149,7 +149,7 @@ RunService.Heartbeat:Connect(function(dt: number)
  local entry=pg:FindFirstChild("StealEntry")
  local tutorial=entry and entry:FindFirstChild("Tutorial")
  hint.Visible=not (entry and entry:IsA("ScreenGui") and entry.Enabled and tutorial and tutorial:IsA("GuiObject") and tutorial.Visible)
- hint.Text=if riding and targetDistance<14 then "เบรก แล้วกด F ค้าง • "..(if carrying>0 then "ฝาก Cargo" else "เก็บอะไหล่") elseif UserInputService.TouchEnabled then "ใช้ปุ่มควบคุมรถและปุ่ม Interact ที่ปรากฏ" elseif riding then "W/S เร่ง–เบรก • A/D เลี้ยว • E เกียร์ • Space ลงรถ" else "เข้าใกล้รถ กด E ขึ้นรถ • F ค้างเก็บ/ฝาก"
+ hint.Text=if riding and targetDistance<14 then (if carrying>0 then "เบรก แล้วกด E • ฝาก Cargo" else "กด E เก็บอะไหล่") elseif UserInputService.TouchEnabled then "ใช้ปุ่มควบคุมรถและปุ่ม Interact ที่ปรากฏ" elseif riding then "W/S เร่ง–เบรก • A/D เลี้ยว • จอดนิ่งแล้วกด Space ลงรถ" else "เข้าใกล้รถ กด F ขึ้นรถ • E เก็บอะไหล่"
  root.Visible=not menu.Visible
  if menu.Visible then nav.Visible=not compact end
  toast.Visible=os.clock()<toastUntil

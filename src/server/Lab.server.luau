@@ -17,7 +17,8 @@ require(script.Parent.RiderPose).bind(bike)
 local seat = bike:WaitForChild("DriveSeat") :: VehicleSeat
 local prompt = Instance.new("ProximityPrompt")
 prompt.Name = "RidePrompt"
-prompt.ActionText = "ขึ้นรถทดสอบ"
+prompt.ActionText = "ขึ้นรถ"
+prompt.KeyboardKeyCode = Enum.KeyCode.F -- VehicleInput.Actions.Mount
 prompt.ObjectText = "Street Cub • รถทดสอบ"
 prompt.MaxActivationDistance = 9
 prompt.RequiresLineOfSight = false
@@ -55,7 +56,7 @@ local function fixture(name: string, position: Vector3, color: Color3, action: s
  part.Parent = workspace
  local p = Instance.new("ProximityPrompt")
  p.ActionText = action
- p.KeyboardKeyCode = Enum.KeyCode.F
+ p.KeyboardKeyCode = Enum.KeyCode.E -- VehicleInput.Actions.Pickup
  p.HoldDuration = 0.35
  p.ObjectText = "จุดทดสอบระบบ — Session เท่านั้น"
  p.MaxActivationDistance = 12

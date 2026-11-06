@@ -196,3 +196,9 @@ Owner approved Y-fork rev2. B0: backup pre-b0-v11-20261105-124543 (SHA256SUMS), 
 ## B3 Driving/Functional QA (2026-11-05)
 Report docs/B3_DRIVING_QA_REPORT.md. No source changes. G1-G6/Y-fork/R56-R60/SpeedTestLane/grass/roundtrip12 PASS; Cargo functional PASS but Zone01 turn needs grass (F3). F1 manual shift N->1 required (Easy Arcade conflict). F2 terrain protrudes <=0.59 above MainHighway X3026-3046 (HighwayTerrain flatten from 3030). Turn radius 28sps 30.6, 35sps 32.4/35.8. Perf: 60FPS foreground v11 & empty; 15FPS = Studio background render throttle (log-correlated A/B/C). STOP for Owner Review; proposals: Zone01 fix, Vehicle Assist module, Perf/Mobile QA, Visual.
 
+
+## Master Owner Directive (2026-11-06) — continuous M1–M7
+Owner approved continuous IMPLEMENT→TEST→FIX→COMMIT through M1 controls, M2 garage ownership/personal bikes, M3 Layout B (250) + alternating sides, M4 Raid Gate + 2/5 min cycle, M5 shared parts/E pickup/gate deposit/inventory, M6 NPC chase, M7 end-to-end. Garage auto-deposit cancelled (deposit at Raid Gate). No push/publish; vendor A-Chassis untouched.
+
+### M1 Vehicle Controls — PASS (real keys, build StealAPart-M1)
+F mount (RidePrompt), E pickup prompt, W/S/A/D, Space dismount only when stopped, LeftShift sunk. Assist remaps vendor gear/clutch/mode/toggles off game keys at runtime, stops the rider-copy Ignition LocalScript (vendor F = engine off) and restarts a stalled engine via IsOn.Starting. Real keyboard (StudioMCP user_keyboard_input): F mount → gear 1 engine on; W to 6 stud/s 0.50/0.73 s; F tap/hold while riding: engine stays on; E/Q/M/P/R/T/Y/U/C: gear 1 Auto TCS unchanged; S hold after stop −0.03 stud (no reverse); Space at 27 stud/s no dismount, at 0 dismount; walk + jump on foot. Evidence docs/mcp-check/m1-realkeys.json.
