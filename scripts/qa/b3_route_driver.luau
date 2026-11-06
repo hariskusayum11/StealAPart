@@ -82,7 +82,7 @@ local function zone01Keyhole()
  curV=12;goto(Vector3.new(-300,0,-8));goto(Vector3.new(sx-28,0,-8));curV=6;arcTo(Vector3.new(0,0,-1),28)
  arc(28,40,-1);local i0=#path+1;arc(28,260,1);local i1=#path;arc(28,40,-1)
  local best,bd=i0,math.huge;for i=i0,i1 do local d=(path[i].p-flat(L.Pickup)).Magnitude;if d<bd then bd=d;best=i end end
- path[best].tag="pickup"
+ path[best].tag="apex" -- legacy pickup tile removed in M5; checkpoint only
  curV=8;goto(Vector3.new(pos.X,0,-20));arcTo(Vector3.new(-1,0,0),28);curV=12;goto(Vector3.new(-340,0,8))
 end
 -- Cargo variant: the asphalt-only keyhole never comes within the server's 14-stud pickup range, so the

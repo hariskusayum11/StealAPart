@@ -43,6 +43,8 @@ elseif STEP=="toHighway" then -- out of Zone 01 on the highway (catch outside th
  ensureSeated();placeAt(L.RoutePoint(-120)+Vector3.new(0,2.85,-8),Vector3.new(1,0,0))
 elseif STEP=="toCityFacingGate" then -- Garage City side facing the closed gate
  ensureSeated();placeAt(Vector3.new(C.GateX-22,2.85,-8),Vector3.new(1,0,0))
+elseif STEP:match("^zone%d+$") then -- seated on the highway lane beside zone N (streaming/perf checks)
+ ensureSeated();local z=L.Zones[tonumber(STEP:match("%d+"))];placeAt(L.RoutePoint(z.position.X-30)+Vector3.new(0,2.85,-8),Vector3.new(1,0,0))
 elseif STEP=="advance" then
  hook:Invoke("raidAdvance");task.wait(1)
 elseif STEP=="wait" then
