@@ -8,6 +8,7 @@ local Garage = require(script.Parent.GarageService)
 local Vehicles = require(script.Parent.VehicleService)
 local Raid = require(script.Parent.RaidService)
 local Parts = require(script.Parent.PartsService)
+local Npc = require(script.Parent.NpcService)
 
 -- Players without a garage (7th player) spawn at the Central Plaza; owners are moved to their plot.
 local spawnPoint = workspace:FindFirstChild("Spawn")
@@ -54,6 +55,7 @@ Players.PlayerRemoving:Connect(function(player: Player)
 end)
 
 Parts.start()
+Npc.start()
 Raid.start()
 
 -- Studio-only QA hook (ServerStorage never replicates; not created in live servers): lets the
@@ -84,6 +86,11 @@ if game:GetService("RunService"):IsStudio() then
    local humanoid = player and player.Character and player.Character:FindFirstChildOfClass("Humanoid")
    if bike and humanoid then Vehicles.seatOf(bike):Sit(humanoid); return true end
    return false
+  end
+  if command == "guards" then
+   local out = {}
+   for _, g in Npc.guards() do table.insert(out, {name = g.model.Name, state = g.state, x = g.position.X, z = g.position.Z, carrying = g.carrying}) end
+   return out
   end
   return nil
  end
